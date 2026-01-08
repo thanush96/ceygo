@@ -4,11 +4,56 @@ import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/features/home/presentation/providers/home_providers.dart';
 import 'package:ceygo_app/features/home/presentation/widgets/car_card.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
+import 'package:ceygo_app/core/widgets/bottom_nav_bar.dart';
 import 'package:ceygo_app/features/home/data/mock_car_repository.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
+
+  void _onNavTap(int index) {
+    if (index == _currentIndex) return;
+
+    switch (index) {
+      case 0:
+        // Already on home
+        break;
+      case 1:
+        context.go('/favorites');
+        break;
+      case 2:
+        context.go('/chat');
+        break;
+      case 3:
+        context.go('/profile');
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: const HomeContent(),
+        bottomNavigationBar: BottomNavBar(
+          currentIndex: _currentIndex,
+          onTap: _onNavTap,
+        ),
+      ),
+    );
+  }
+}
+
+class HomeContent extends ConsumerWidget {
+  const HomeContent({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -339,7 +384,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
             ),
 
-            const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
+            const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
           ],
         ),
       ),
