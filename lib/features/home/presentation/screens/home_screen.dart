@@ -21,29 +21,94 @@ class HomeScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
-          title: Row(
-            children: [
-              const Icon(
-                Icons.location_on_outlined,
-                color: Colors.grey,
-                size: 18,
+          leadingWidth: 70,
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: GestureDetector(
+              onTap: () => context.push('/profile'),
+              child: CircleAvatar(
+                backgroundColor: Colors.grey.shade200,
+                child: const Icon(Icons.person, color: Colors.grey),
               ),
-              const SizedBox(width: 4),
-              Text(
-                "Colombo, Sri Lanka",
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[700],
-                  fontWeight: FontWeight.w500,
-                ),
+            ),
+          ),
+          centerTitle: true,
+          title: GestureDetector(
+            onTap: () {
+              // TODO: Show location picker bottom sheet
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              // decoration: BoxDecoration(
+              //   color: Colors.white,
+              //   borderRadius: BorderRadius.circular(20),
+              // ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.location_on, color: theme.primaryColor, size: 18),
+                  const SizedBox(width: 6),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Current Location",
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 10,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      Text(
+                        "Colombo, Sri Lanka",
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[800],
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.keyboard_arrow_down,
+                    color: Colors.grey[600],
+                    size: 20,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
           actions: [
             IconButton(
-              onPressed: () => context.push('/profile'), // Profile
-              icon: CircleAvatar(
-                backgroundColor: Colors.grey.shade200,
-                child: const Icon(Icons.person, color: Colors.grey),
+              onPressed: () {
+                // TODO: Navigate to notifications
+              },
+              icon: Stack(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: const Icon(
+                      Icons.notifications_outlined,
+                      color: Colors.black,
+                    ),
+                  ),
+                  // Notification badge
+                  Positioned(
+                    right: 10,
+                    top: 10,
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(width: 16),
