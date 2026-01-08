@@ -2,6 +2,7 @@ class Car {
   final String id;
   final String name;
   final String brand;
+  final String brandLogo;
   final String imageUrl;
   final double pricePerDay;
   final int seats;
@@ -14,6 +15,7 @@ class Car {
     required this.id,
     required this.name,
     required this.brand,
+    required this.brandLogo,
     required this.imageUrl,
     required this.pricePerDay,
     required this.seats,

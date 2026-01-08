@@ -14,37 +14,24 @@ final appRouter = GoRouter(
   initialLocation: '/',
   routes: [
     GoRoute(
-      path: '/',
+      path: '/onboarding',
       builder: (context, state) => const OnboardingScreen(),
     ),
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: '/signup',
-      builder: (context, state) => const SignupScreen(),
-    ),
-    GoRoute(
-      path: '/otp',
-      builder: (context, state) => const OtpScreen(),
-    ),
+    GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+    GoRoute(path: '/signup', builder: (context, state) => const SignupScreen()),
+    GoRoute(path: '/otp', builder: (context, state) => const OtpScreen()),
     GoRoute(
       path: '/forgot-password',
       builder: (context, state) => const PasswordResetScreen(),
     ),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => const HomeScreen(),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
     GoRoute(
       path: '/car-details/:id',
-      builder: (context, state) => CarDetailsScreen(carId: state.pathParameters['id']!),
+      builder:
+          (context, state) =>
+              CarDetailsScreen(carId: state.pathParameters['id']!),
     ),
-    GoRoute(
-      path: '/chat',
-      builder: (context, state) => const ChatScreen(),
-    ),
+    GoRoute(path: '/chat', builder: (context, state) => const ChatScreen()),
     GoRoute(
       path: '/checkout',
       builder: (context, state) => const CheckoutScreen(),

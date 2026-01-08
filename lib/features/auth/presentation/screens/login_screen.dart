@@ -54,7 +54,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
-                          border: Border.all(width: 1, color: AppTheme.primaryColor.withOpacity(0.3)),
+                          border: Border.all(
+                            width: 1,
+                            color: AppTheme.primaryColor.withOpacity(0.3),
+                          ),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.05),
@@ -109,11 +112,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                   prefixIcon: const Icon(Icons.lock_outline),
                                   suffixIcon: IconButton(
                                     icon: Icon(
-                                      _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                                      _isPasswordVisible
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
                                     ),
                                     onPressed: () {
                                       setState(() {
-                                        _isPasswordVisible = !_isPasswordVisible;
+                                        _isPasswordVisible =
+                                            !_isPasswordVisible;
                                       });
                                     },
                                   ),
@@ -128,33 +134,40 @@ class _LoginScreenState extends State<LoginScreen> {
                               Align(
                                 alignment: Alignment.centerRight,
                                 child: TextButton(
-                                  onPressed: () => context.push('/forgot-password'),
+                                  onPressed:
+                                      () => context.push('/forgot-password'),
                                   child: Text(l10n.forgotPassword),
                                 ),
                               ),
                               const SizedBox(height: 24),
                               ElevatedButton(
                                 onPressed: () {
-                                   if (_formKey.currentState!.validate()) {
-                                      context.go('/home');
-                                   }
+                                  if (_formKey.currentState!.validate()) {
+                                    context.go('/home');
+                                  }
                                 },
                                 style: ElevatedButton.styleFrom(
                                   minimumSize: const Size(double.infinity, 56),
                                   shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
                                 ),
                                 child: Text(
                                   l10n.login,
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 24),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text("Don't have an account? ", style: TextStyle(color: Colors.grey[600])),
+                                  Text(
+                                    "Don't have an account? ",
+                                    style: TextStyle(color: Colors.grey[600]),
+                                  ),
                                   GestureDetector(
                                     onTap: () => context.push('/signup'),
                                     child: Text(

@@ -6,11 +6,7 @@ class SlideAction extends StatefulWidget {
   final VoidCallback onSubmit;
   final String text;
 
-  const SlideAction({
-    super.key,
-    required this.onSubmit,
-    this.text = '',
-  });
+  const SlideAction({super.key, required this.onSubmit, this.text = ''});
 
   @override
   State<SlideAction> createState() => _SlideActionState();
@@ -141,8 +137,6 @@ class _SlideActionState extends State<SlideAction>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxWidth = constraints.maxWidth;
@@ -152,7 +146,9 @@ class _SlideActionState extends State<SlideAction>
         return Container(
           height: 80,
           decoration: BoxDecoration(
-            color: const Color(0xFF1A1A1A).withOpacity(0.1), // Adjusted for glassmorphism
+            color: const Color(
+              0xFF1A1A1A,
+            ).withOpacity(0.1), // Adjusted for glassmorphism
             borderRadius: BorderRadius.circular(50),
             border: Border.all(
               color: const Color(0xFFFFFF).withOpacity(0.3),
@@ -265,20 +261,20 @@ class _SlideActionState extends State<SlideAction>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient:
-                          // _isCompleting
-                          //     ? LinearGradient(
-                          //       colors: [
-                          //         AppTheme.successColor,
-                          //         AppTheme.successColor.withOpacity(0.8),
-                          //       ],
-                          //     )
-                          //     : 
-                              LinearGradient(
-                                colors: [
-                                  AppTheme.primaryColor,
-                                  AppTheme.primaryColor.withOpacity(0.8),
-                                ],
-                              ),
+                      // _isCompleting
+                      //     ? LinearGradient(
+                      //       colors: [
+                      //         AppTheme.successColor,
+                      //         AppTheme.successColor.withOpacity(0.8),
+                      //       ],
+                      //     )
+                      //     :
+                      LinearGradient(
+                        colors: [
+                          AppTheme.primaryColor,
+                          AppTheme.primaryColor.withOpacity(0.8),
+                        ],
+                      ),
                       boxShadow: [
                         BoxShadow(
                           color: (_isCompleting
@@ -294,8 +290,7 @@ class _SlideActionState extends State<SlideAction>
                     child: Icon(
                       _isCompleting
                           ? Icons.check_rounded
-                          : 
-                          Icons.arrow_forward_rounded,
+                          : Icons.arrow_forward_rounded,
                       color: Colors.white,
                       size: 28,
                     ),

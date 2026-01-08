@@ -1,0 +1,152 @@
+[
+  {
+    "name": "Alfa Romeo",
+    "slug": "alfa-romeo",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/alfa-romeo.png"
+  },
+  {
+    "name": "Audi",
+    "slug": "audi",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/audi.png"
+  },
+  {
+    "name": "BMW",
+    "slug": "bmw",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/bmw.png"
+  },
+  {
+    "name": "Bentley",
+    "slug": "bentley",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/bentley.png"
+  },
+  {
+    "name": "Chevrolet",
+    "slug": "chevrolet",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/chevrolet.png"
+  },
+  {
+    "name": "Ferrari",
+    "slug": "ferrari",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/ferrari.png"
+  },
+  {
+    "name": "Fiat",
+    "slug": "fiat",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/fiat.png"
+  },
+  {
+    "name": "Ford",
+    "slug": "ford",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/ford.png"
+  },
+  {
+    "name": "Honda",
+    "slug": "honda",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/honda.png"
+  },
+  {
+    "name": "Hyundai",
+    "slug": "hyundai",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/hyundai.png"
+  },
+  {
+    "name": "Jaguar",
+    "slug": "jaguar",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/jaguar.png"
+  },
+  {
+    "name": "Jeep",
+    "slug": "jeep",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/jeep.png"
+  },
+  {
+    "name": "Kia",
+    "slug": "kia",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/kia.png"
+  },
+  {
+    "name": "Lamborghini",
+    "slug": "lamborghini",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/lamborghini.png"
+  },
+  {
+    "name": "Land Rover",
+    "slug": "land-rover",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/land-rover.png"
+  },
+  {
+    "name": "Lexus",
+    "slug": "lexus",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/lexus.png"
+  },
+  {
+    "name": "Mazda",
+    "slug": "mazda",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/mazda.png"
+  },
+  {
+    "name": "Mercedes-Benz",
+    "slug": "mercedes-benz",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/mercedes-benz.png"
+  },
+  {
+    "name": "Mitsubishi",
+    "slug": "mitsubishi",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/mitsubishi.png"
+  },
+  {
+    "name": "Nissan",
+    "slug": "nissan",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/nissan.png"
+  },
+  {
+    "name": "Peugeot",
+    "slug": "peugeot",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/peugeot.png"
+  },
+  {
+    "name": "Porsche",
+    "slug": "porsche",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/porsche.png"
+  },
+  {
+    "name": "Renault",
+    "slug": "renault",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/renault.png"
+  },
+  {
+    "name": "Rolls-Royce",
+    "slug": "rolls-royce",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/rolls-royce.png"
+  },
+  {
+    "name": "Subaru",
+    "slug": "subaru",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/subaru.png"
+  },
+  {
+    "name": "Suzuki",
+    "slug": "suzuki",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/suzuki.png"
+  },
+  {
+    "name": "Tesla",
+    "slug": "tesla",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/tesla.png"
+  },
+  {
+    "name": "Toyota",
+    "slug": "toyota",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/toyota.png"
+  },
+  {
+    "name": "Volkswagen",
+    "slug": "volkswagen",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/volkswagen.png"
+  },
+  {
+    "name": "Volvo",
+    "slug": "volvo",
+    "thumb": "https://raw.githubusercontent.com/filippofilip95/car-logos-dataset/master/logos/thumb/volvo.png"
+  }
+]
