@@ -240,8 +240,8 @@ class _CarSpecItem extends StatelessWidget {
           text,
           style: TextStyle(
             fontSize: 14,
-            color: Colors.grey.shade700,
-            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade800,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],

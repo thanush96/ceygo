@@ -57,63 +57,86 @@ class HomeScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Find Your\nPerfect Ride",
-                      style: theme.textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        height: 1.2,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Search Bar
-                    GestureDetector(
-                      onTap: () {
-                        // context.push('/search'); // TODO: Implement Search
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.search, color: Colors.grey),
-                            const SizedBox(width: 12),
-                            Text(
-                              l10n.search,
-                              style: TextStyle(
-                                color: Colors.grey[400],
-                                fontSize: 16,
+                    // Text(
+                    //   "Find Your\nPerfect Ride",
+                    //   style: theme.textTheme.displaySmall?.copyWith(
+                    //     fontWeight: FontWeight.bold,
+                    //     height: 1.2,
+                    //   ),
+                    // ),
+                    // const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Search Bar
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              // context.push('/search'); // TODO: Implement Search
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 4,
                               ),
-                            ),
-                            const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: theme.primaryColor,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Icon(
-                                Icons.tune,
                                 color: Colors.white,
-                                size: 20,
+                                borderRadius: BorderRadius.circular(25),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Text(
+                                      l10n.search,
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: theme.primaryColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(10.0),
+                                      child: Icon(
+                                        Icons.search,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+
+                        const SizedBox(width: 12),
+
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          child: const Icon(
+                            Icons.tune,
+                            color: Colors.black,
+                            size: 20,
+                          ),
+                        ),
+                      ],
                     ),
 
                     const SizedBox(height: 20),
@@ -125,13 +148,13 @@ class HomeScreen extends ConsumerWidget {
                         children: [
                           // "All" chip
                           Container(
-                            margin: const EdgeInsets.only(right: 12),
+                            margin: const EdgeInsets.only(right: 6),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 20,
-                              vertical: 10,
+                              vertical: 13,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.black,
+                              color: theme.primaryColor,
                               borderRadius: BorderRadius.circular(30),
                             ),
                             child: Row(
@@ -156,10 +179,10 @@ class HomeScreen extends ConsumerWidget {
                           // Brand chips from mock data
                           ...MockCarRepository.getBrands().map((brand) {
                             return Container(
-                              margin: const EdgeInsets.only(right: 12),
+                              margin: const EdgeInsets.only(right: 6),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
-                                vertical: 8,
+                                vertical: 11,
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.white,
@@ -173,8 +196,8 @@ class HomeScreen extends ConsumerWidget {
                                     borderRadius: BorderRadius.circular(4),
                                     child: Image.network(
                                       brand['logo']!,
-                                      width: 24,
-                                      height: 24,
+                                      width: 26,
+                                      height: 26,
                                       fit: BoxFit.contain,
                                       errorBuilder:
                                           (ctx, _, __) => const Icon(
