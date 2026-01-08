@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -20,14 +21,17 @@ class _LoginScreenState extends State<LoginScreen> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new),
-          onPressed: () => context.pop(),
+    return GradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new),
+            onPressed: () => context.pop(),
+          ),
         ),
-      ),
-      body: SafeArea(
+        body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Form(
@@ -37,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const SizedBox(height: 20),
                 Text(
-                  "Welcome Back 👋",
+                  "Welcome Back",
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
@@ -136,6 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

@@ -4,9 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   static const Color primaryColor = Color(0xFF2563EB); // Modern Blue
   static const Color secondaryColor = Color(0xFF3B82F6);
-  static const Color backgroundColor = Colors.white;
+  static const Color backgroundColor = Colors.white; // Reverted to white as we use GradientBackground
   static const Color surfaceColor = Color(0xFFF8FAFC);
   static const Color errorColor = Color(0xFFEF4444);
+  static const Color successColor = Color(0xFF10B981); // Emerald Green
+  static const Color surfaceColorDark = Color(0xFF1E293B);
 
   static ThemeData get lightTheme {
     return ThemeData(
@@ -20,9 +22,10 @@ class AppTheme {
         background: backgroundColor,
       ),
       scaffoldBackgroundColor: backgroundColor,
-      textTheme: GoogleFonts.outfitTextTheme(),
+      fontFamily: 'Helvetica',
+      // textTheme: GoogleFonts.outfitTextTheme(),
       appBarTheme: const AppBarTheme(
-        backgroundColor: backgroundColor,
+        backgroundColor: Colors.transparent, // Default to transparent for gradient
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/features/home/presentation/providers/home_providers.dart';
 import 'package:ceygo_app/features/home/presentation/widgets/car_card.dart';
+import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -14,9 +15,11 @@ class HomeScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
+    return GradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
         title: Row(
           children: [
             const Icon(Icons.location_on_outlined, color: Colors.grey, size: 18),
@@ -171,6 +174,7 @@ class HomeScreen extends ConsumerWidget {
           
            const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
         ],
+      ),
       ),
     );
   }

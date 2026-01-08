@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ceygo_app/core/widgets/slide_action.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -14,12 +15,19 @@ class OnboardingScreen extends StatelessWidget {
           // Background Image (Placeholder)
           Positioned.fill(
             child: Image.asset(
-              'assets/images/car.png', // Assuming we'll put a nice car image here
+              'assets/images/onboard.jpg',
               fit: BoxFit.cover,
-              errorBuilder: (ctx, _, __) => Container(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
-                child: const Center(child: Icon(Icons.directions_car, size: 100, color: Colors.grey)),
-              ),
+              errorBuilder:
+                  (ctx, _, __) => Container(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    child: const Center(
+                      child: Icon(
+                        Icons.directions_car,
+                        size: 100,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
             ),
           ),
           // Gradient Overlay
@@ -29,10 +37,7 @@ class OnboardingScreen extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.8),
-                  ],
+                  colors: [Colors.transparent, Colors.black.withOpacity(0.8)],
                 ),
               ),
             ),
@@ -40,41 +45,51 @@ class OnboardingScreen extends StatelessWidget {
           // Content
           Padding(
             padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.onboardingTitle,
-                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+            child: SafeArea(
+              child: Column(
+                mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween, // Top and Bottom alignment
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Top Content
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 20), // Spacing from top
+                      Text(
+                        l10n.onboardingTitle,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.displayLarge?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          height: 1.1,
+                          fontSize: 52,
+                        ),
                       ),
-                ),
-                 const SizedBox(height: 16),
-                Text(
-                  l10n.onboardingSubtitle,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white70,
+                      const SizedBox(height: 16),
+                      Text(
+                        l10n.onboardingSubtitle,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Colors.white70,
+                          fontSize: 18,
+                        ),
                       ),
-                ),
-                const SizedBox(height: 48),
-                ElevatedButton(
-                  onPressed: () => context.push('/login'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    minimumSize: const Size(double.infinity, 56),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                    ],
+                  ),
+
+                  // Bottom Content
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 24.0),
+                    child: SlideAction(
+                      text: "Get Started",
+                      onSubmit: () {
+                         context.push('/login');
+                      },
                     ),
                   ),
-                  child: Text(
-                    "Get Started", // TODO: Add to l10n
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                const SizedBox(height: 48),
-              ],
+                ],
+              ),
             ),
           ),
         ],

@@ -1,19 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:ceygo_app/core/widgets/gradient_background.dart';
 class OtpScreen extends StatelessWidget {
   const OtpScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Verification"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new),
-          onPressed: () => context.pop(),
+    return GradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: const Text("Verification"),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new),
+            onPressed: () => context.pop(),
+          ),
         ),
-      ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -62,6 +65,7 @@ class OtpScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }

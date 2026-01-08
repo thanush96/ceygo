@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:ceygo_app/core/widgets/gradient_background.dart';
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
 
@@ -31,14 +31,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Checkout"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new),
-          onPressed: () => context.pop(),
+    return GradientBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: const Text("Checkout"),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new),
+            onPressed: () => context.pop(),
+          ),
         ),
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
@@ -136,6 +139,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
