@@ -14,52 +14,61 @@ class BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
-      margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(40),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          _NavBarItem(
-            icon: Icons.home_outlined,
-            selectedIcon: Icons.home,
-            isSelected: currentIndex == 0,
-            primaryColor: theme.primaryColor,
-            onTap: () => onTap(0),
-          ),
-          _NavBarItem(
-            icon: Icons.history_outlined,
-            selectedIcon: Icons.history,
-            isSelected: currentIndex == 1,
-            primaryColor: theme.primaryColor,
-            onTap: () => onTap(1),
-          ),
-          _NavBarItem(
-            icon: Icons.favorite_outline,
-            selectedIcon: Icons.favorite,
-            isSelected: currentIndex == 2,
-            primaryColor: theme.primaryColor,
-            onTap: () => onTap(2),
-          ),
-          _NavBarItem(
-            icon: Icons.chat_bubble_outline,
-            selectedIcon: Icons.chat_bubble,
-            isSelected: currentIndex == 3,
-            primaryColor: theme.primaryColor,
-            onTap: () => onTap(3),
-          ),
-          _NavBarItem(
-            icon: Icons.person_outline,
-            selectedIcon: Icons.person,
-            isSelected: currentIndex == 4,
-            primaryColor: theme.primaryColor,
-            onTap: () => onTap(4),
-          ),
-        ],
+    return SafeArea(
+      child: Container(
+        margin: const EdgeInsets.only(left: 20, right: 20, bottom: 0),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(40),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            _NavBarItem(
+              icon: Icons.home_outlined,
+              selectedIcon: Icons.home,
+              isSelected: currentIndex == 0,
+              primaryColor: theme.primaryColor,
+              onTap: () => onTap(0),
+            ),
+            _NavBarItem(
+              icon: Icons.history_outlined,
+              selectedIcon: Icons.history,
+              isSelected: currentIndex == 1,
+              primaryColor: theme.primaryColor,
+              onTap: () => onTap(1),
+            ),
+            _NavBarItem(
+              icon: Icons.favorite_outline,
+              selectedIcon: Icons.favorite,
+              isSelected: currentIndex == 2,
+              primaryColor: theme.primaryColor,
+              onTap: () => onTap(2),
+            ),
+            _NavBarItem(
+              icon: Icons.chat_bubble_outline,
+              selectedIcon: Icons.chat_bubble,
+              isSelected: currentIndex == 3,
+              primaryColor: theme.primaryColor,
+              onTap: () => onTap(3),
+            ),
+            _NavBarItem(
+              icon: Icons.person_outline,
+              selectedIcon: Icons.person,
+              isSelected: currentIndex == 4,
+              primaryColor: theme.primaryColor,
+              onTap: () => onTap(4),
+            ),
+          ],
+        ),
       ),
     );
   }

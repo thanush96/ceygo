@@ -38,14 +38,26 @@ class _MainShellState extends State<MainShell> {
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: IndexedStack(index: _currentIndex, children: _screens),
-        bottomNavigationBar: BottomNavBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
+        extendBody: true,
+        body: Stack(
+          children: [
+            // Content screens
+            IndexedStack(index: _currentIndex, children: _screens),
+            // Floating navigation bar
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: -18,
+              child: BottomNavBar(
+                currentIndex: _currentIndex,
+                onTap: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
