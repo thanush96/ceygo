@@ -11,10 +11,7 @@ import 'package:ceygo_app/core/widgets/main_shell.dart';
 final appRouter = GoRouter(
   initialLocation: '/',
   routes: [
-    GoRoute(
-      path: '/onboarding',
-      builder: (context, state) => const OnboardingScreen(),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const OnboardingScreen()),
     GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
     GoRoute(path: '/signup', builder: (context, state) => const SignupScreen()),
     GoRoute(path: '/otp', builder: (context, state) => const OtpScreen()),
@@ -23,7 +20,7 @@ final appRouter = GoRouter(
       builder: (context, state) => const PasswordResetScreen(),
     ),
     // Main shell with bottom navigation
-    GoRoute(path: '/', builder: (context, state) => const MainShell()),
+    GoRoute(path: '/home', builder: (context, state) => const MainShell()),
     GoRoute(
       path: '/car-details/:id',
       builder:

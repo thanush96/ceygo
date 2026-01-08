@@ -6,6 +6,7 @@ import 'package:ceygo_app/features/home/presentation/widgets/car_card.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:ceygo_app/core/widgets/bottom_nav_bar.dart';
 import 'package:ceygo_app/features/home/data/mock_car_repository.dart';
+import 'package:ceygo_app/features/home/presentation/widgets/filter_bottom_sheet.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -70,7 +71,7 @@ class HomeContent extends ConsumerWidget {
           leading: Padding(
             padding: const EdgeInsets.only(left: 16),
             child: GestureDetector(
-              onTap: () => context.push('/profile'),
+              onTap: () => context.go('/profile'),
               child: CircleAvatar(
                 backgroundColor: Colors.grey.shade200,
                 child: const Icon(Icons.person, color: Colors.grey),
@@ -234,16 +235,21 @@ class HomeContent extends ConsumerWidget {
 
                         const SizedBox(width: 12),
 
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          child: const Icon(
-                            Icons.tune,
-                            color: Colors.black,
-                            size: 20,
+                        GestureDetector(
+                          onTap: () {
+                            showFilterBottomSheet(context);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            child: const Icon(
+                              Icons.tune,
+                              color: Colors.black,
+                              size: 20,
+                            ),
                           ),
                         ),
                       ],

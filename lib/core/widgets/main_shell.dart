@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ceygo_app/core/widgets/bottom_nav_bar.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
+import 'package:ceygo_app/core/providers/navigation_provider.dart';
 import 'package:ceygo_app/features/home/presentation/screens/home_content.dart';
 import 'package:ceygo_app/features/booking/presentation/screens/history_content.dart';
 import 'package:ceygo_app/features/home/presentation/screens/favorites_content.dart';
 import 'package:ceygo_app/features/booking/presentation/screens/chat_content.dart';
 import 'package:ceygo_app/features/profile/presentation/screens/profile_content.dart';
 
-class MainShell extends StatefulWidget {
+class MainShell extends ConsumerStatefulWidget {
   final int initialIndex;
 
   const MainShell({super.key, this.initialIndex = 0});
 
   @override
-  State<MainShell> createState() => _MainShellState();
+  ConsumerState<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<MainShell> {
-  late int _currentIndex;
-
+class _MainShellState extends ConsumerState<MainShell> {
   final List<Widget> _screens = const [
     HomeContent(),
     HistoryContent(),
@@ -30,11 +30,16 @@ class _MainShellState extends State<MainShell> {
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.initialIndex;
+    // Set initial index after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(currentTabIndexProvider.notifier).setIndex(widget.initialIndex);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = ref.watch(currentTabIndexProvider);
+
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -42,18 +47,16 @@ class _MainShellState extends State<MainShell> {
         body: Stack(
           children: [
             // Content screens
-            IndexedStack(index: _currentIndex, children: _screens),
+            IndexedStack(index: currentIndex, children: _screens),
             // Floating navigation bar
             Positioned(
               left: 0,
               right: 0,
               bottom: -18,
               child: BottomNavBar(
-                currentIndex: _currentIndex,
+                currentIndex: currentIndex,
                 onTap: (index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
+                  ref.read(currentTabIndexProvider.notifier).setIndex(index);
                 },
               ),
             ),
