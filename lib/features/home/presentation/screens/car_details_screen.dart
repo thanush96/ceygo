@@ -7,7 +7,7 @@ import 'package:ceygo_app/features/home/presentation/providers/home_providers.da
 class _AppColors {
   static const primaryBlue = Color(0xFF2563EB);
   static const gradientStart = Color.fromARGB(255, 219, 240, 255);
-  static final gradientEnd = Color.fromARGB(255, 233, 243, 250);
+  static final gradientEnd = Color.fromARGB(255, 237, 243, 246);
 }
 
 class _Dimensions {
@@ -88,7 +88,7 @@ class _TopAppBar extends StatelessWidget {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -96,10 +96,7 @@ class _TopAppBar extends StatelessWidget {
                 icon: Icons.arrow_back,
                 onPressed: () => context.pop(),
               ),
-              const Text(
-                'Car Detail',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
+              const Text('Car Detail', style: TextStyle(fontSize: 17)),
               _AppBarButton(icon: Icons.favorite_border, onPressed: () {}),
             ],
           ),
