@@ -3,6 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/features/home/presentation/providers/home_providers.dart';
 
+// Constants
+class _AppColors {
+  static const primaryBlue = Color(0xFF2563EB);
+  static const gradientStart = Color.fromARGB(255, 206, 233, 255);
+  static final gradientEnd = Colors.blue.shade50;
+}
+
+class _Dimensions {
+  static const double appBarIconSize = 18.0;
+  static const double appBarButtonRadius = 18.0;
+  static const double cardRadius = 20.0;
+  static const double photoSize = 80.0;
+  static const double bottomButtonRadius = 40.0;
+}
+
 class CarDetailsScreen extends ConsumerWidget {
   final String carId;
 
@@ -13,206 +28,484 @@ class CarDetailsScreen extends ConsumerWidget {
     final carsAsync = ref.watch(carListProvider);
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: CircleAvatar(
-             backgroundColor: Colors.white,
-             child: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () => context.pop(),
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [_AppColors.gradientStart, _AppColors.gradientEnd],
           ),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: CircleAvatar(
-              backgroundColor: Colors.white,
-              child: IconButton(
-                icon: const Icon(Icons.favorite_border, color: Colors.black),
-                onPressed: () {},
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: carsAsync.when(
-        data: (cars) {
-          final car = cars.firstWhere((c) => c.id == carId, orElse: () => cars.first);
-          
-          return Column(
-            children: [
-              // Image Header using Expanded to push content down
-              Expanded(
-                flex: 4,
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                  ),
-                  child: Image.asset(
-                    car.imageUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (ctx, _, __) => const Center(
-                         child: Icon(Icons.directions_car, size: 100, color: Colors.grey),
-                    ),
-                  ),
-                ),
-              ),
-              
-              // Details Sheet
-              Expanded(
-                flex: 5,
-                child: Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black12, blurRadius: 20, offset: Offset(0, -5)),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                car.brand,
-                                style: TextStyle(color: Colors.grey[600], fontSize: 16),
-                              ),
-                              Text(
-                                car.name,
-                                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                "Price",
-                                style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                              ),
-                              Text(
-                                "\$${car.pricePerDay.toStringAsFixed(0)}",
-                                style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      
-                      // Specifications
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _DetailBox(icon: Icons.speed, label: "Top Speed", value: "200 km/h"),
-                          _DetailBox(icon: Icons.settings, label: "Transmission", value: car.transmission),
-                          _DetailBox(icon: Icons.local_gas_station, label: "Fuel", value: car.fuelType),
-                        ],
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      const Text(
-                        "Description",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "Experience the thrill of driving this amazing ${car.brand} ${car.name}. Perfect for city drives and long journeys with ultimate comfort.",
-                        style: TextStyle(color: Colors.grey[600], height: 1.5),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      
-                      const Spacer(),
-                      
-                      // Bottom Buttons
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => context.push('/chat'),
-                              style: OutlinedButton.styleFrom(
-                                minimumSize: const Size(double.infinity, 56),
-                                side: BorderSide(color: Theme.of(context).primaryColor),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                              child: const Text("Chat / Negotiate"),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () => context.push('/checkout'),
-                              style: ElevatedButton.styleFrom(
-                                minimumSize: const Size(double.infinity, 56),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                              child: const Text("Book Now"),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text("Error loading details")),
+        child: carsAsync.when(
+          data: (cars) {
+            final car = cars.firstWhere(
+              (c) => c.id == carId,
+              orElse: () => cars.first,
+            );
+            return _CarDetailsContent(car: car);
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, _) => const Center(child: Text("Error loading details")),
+        ),
       ),
     );
   }
 }
 
-class _DetailBox extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  
-  const _DetailBox({required this.icon, required this.label, required this.value});
-  
+class _CarDetailsContent extends StatelessWidget {
+  final dynamic car;
+
+  const _CarDetailsContent({required this.car});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        SingleChildScrollView(
+          child: Column(
+            children: [
+              _HeroSection(car: car),
+              _RenterCard(car: car),
+              const SizedBox(height: 100),
+            ],
+          ),
+        ),
+        const _TopAppBar(),
+        _BottomBookButton(car: car),
+      ],
+    );
+  }
+}
+
+// Compact Top App Bar
+class _TopAppBar extends StatelessWidget {
+  const _TopAppBar();
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(16),
+      color: _AppColors.gradientStart,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _AppBarButton(
+                icon: Icons.arrow_back,
+                onPressed: () => context.pop(),
+              ),
+              const Text(
+                'Car Detail',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              _AppBarButton(icon: Icons.favorite_border, onPressed: () {}),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+}
+
+class _AppBarButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  const _AppBarButton({required this.icon, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: CircleAvatar(
+        radius: _Dimensions.appBarButtonRadius,
+        backgroundColor: Colors.grey.shade100,
+        child: Icon(
+          icon,
+          color: Colors.black,
+          size: _Dimensions.appBarIconSize,
+        ),
+      ),
+    );
+  }
+}
+
+// Hero Section
+class _HeroSection extends StatelessWidget {
+  final dynamic car;
+
+  const _HeroSection({required this.car});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 24, color: Colors.grey[700]),
-          const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-          const SizedBox(height: 4),
-          Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+          _CarImageWithSpecs(car: car),
+          const SizedBox(height: 20),
+          _PhotoGallery(car: car),
+          const SizedBox(height: 20),
+          _DescriptionCard(car: car),
         ],
       ),
     );
   }
 }
+
+class _CarImageWithSpecs extends StatelessWidget {
+  final dynamic car;
+
+  const _CarImageWithSpecs({required this.car});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 380,
+      child: Stack(
+        children: [
+          Positioned(
+            right: -50,
+            bottom: 20,
+            child: Image.asset(
+              car.imageUrl,
+              height: 180,
+              fit: BoxFit.contain,
+              errorBuilder:
+                  (_, __, ___) => const Icon(
+                    Icons.directions_car,
+                    size: 200,
+                    color: Colors.grey,
+                  ),
+            ),
+          ),
+          Positioned(
+            left: 20,
+            top: 120,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${car.brand} ${car.name}',
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const _SpecItem(label: 'Power', value: '220kw'),
+                const SizedBox(height: 16),
+                const _SpecItem(label: '0 - 100 km/h', value: '5.1sec'),
+                const SizedBox(height: 16),
+                const _SpecItem(label: 'Top speed', value: '275 kmh'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PhotoGallery extends StatelessWidget {
+  final dynamic car;
+
+  const _PhotoGallery({required this.car});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: _Dimensions.photoSize,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        scrollDirection: Axis.horizontal,
+        itemCount: 4,
+        itemBuilder: (_, index) {
+          if (index == 3) return const _MorePhotosCard();
+          return Container(
+            width: _Dimensions.photoSize,
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: Colors.grey.shade200,
+              image: DecorationImage(
+                image: AssetImage(car.imageUrl),
+                fit: BoxFit.cover,
+                onError: (_, __) {},
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _DescriptionCard extends StatelessWidget {
+  final dynamic car;
+
+  const _DescriptionCard({required this.car});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: _cardDecoration,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Description',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          RichText(
+            text: TextSpan(
+              style: TextStyle(
+                color: Colors.grey.shade700,
+                fontSize: 15,
+                height: 1.6,
+              ),
+              children: [
+                TextSpan(
+                  text:
+                      'Experience pure performance with the ${car.brand} ${car.name} — a masterpiece built for thrill-seekers. Its 4.0-liter engine and ',
+                ),
+                TextSpan(
+                  text: 'See More...',
+                  style: TextStyle(
+                    color: Colors.blue.shade600,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RenterCard extends StatelessWidget {
+  final dynamic car;
+
+  const _RenterCard({required this.car});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(20),
+      decoration: _cardDecoration,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Renter',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.grey.shade300,
+                child: const Icon(Icons.person, size: 30),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Alexander',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        const Icon(Icons.star, color: Colors.amber, size: 18),
+                        const SizedBox(width: 4),
+                        Text(
+                          '4.9 (28 reviews)',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              _ActionButton(
+                icon: Icons.message,
+                onPressed: () => context.push('/chat'),
+              ),
+              const SizedBox(width: 8),
+              _ActionButton(icon: Icons.phone, onPressed: () {}),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Pickup Location: 2715 Ash Dr. San Jose',
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  const _ActionButton({required this.icon, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      radius: 25,
+      backgroundColor: _AppColors.primaryBlue,
+      child: IconButton(
+        icon: Icon(icon, color: Colors.white, size: 20),
+        onPressed: onPressed,
+      ),
+    );
+  }
+}
+
+class _BottomBookButton extends StatelessWidget {
+  final dynamic car;
+
+  const _BottomBookButton({required this.car});
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      bottom: 15,
+      left: 16,
+      right: 16,
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(_Dimensions.bottomButtonRadius),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 4,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: Text(
+                  'Rs.${car.pricePerDay.toStringAsFixed(0)}/day',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 3,
+              child: ElevatedButton(
+                onPressed: () => context.push('/checkout'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _AppColors.primaryBlue,
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: const Text(
+                  'Book Rent',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Shared Widgets
+class _SpecItem extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _SpecItem({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MorePhotosCard extends StatelessWidget {
+  const _MorePhotosCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: _Dimensions.photoSize,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.black.withOpacity(0.7),
+      ),
+      child: const Center(
+        child: Text(
+          '+5',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Shared decoration
+BoxDecoration get _cardDecoration => BoxDecoration(
+  color: Colors.white,
+  borderRadius: BorderRadius.circular(_Dimensions.cardRadius),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.05),
+      blurRadius: 10,
+      offset: const Offset(0, 2),
+    ),
+  ],
+);
