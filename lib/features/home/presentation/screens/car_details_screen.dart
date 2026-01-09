@@ -418,7 +418,7 @@ class _BottomBookButton extends StatelessWidget {
             Expanded(
               flex: 3,
               child: ElevatedButton(
-                onPressed: () => context.push('/checkout'),
+                onPressed: () => context.push('/checkout', extra: car),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _AppColors.primaryBlue,
                   minimumSize: const Size(double.infinity, 50),

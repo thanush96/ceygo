@@ -32,7 +32,10 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/checkout',
-      builder: (context, state) => const CheckoutScreen(),
+      builder: (context, state) {
+        final car = state.extra as dynamic;
+        return CheckoutScreen(car: car);
+      },
     ),
   ],
 );
