@@ -8,16 +8,14 @@ class GradientBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFFdde9f8), // Top half
-            Colors.white,      // Bottom half
+            const Color.fromARGB(255, 219, 240, 255), // Top
+            const Color.fromARGB(255, 233, 243, 250), // Bottom
           ],
-          stops: [0.0, 1.0], // You can adjust stops if "half" implies hard line, but usually gradient implies smooth.
-          // User said "top half ... bottom half ...", gradient usually means smooth transition.
         ),
       ),
       child: child,

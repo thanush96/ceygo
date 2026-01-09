@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+// static const gradientStart = Color.fromARGB(255, 206, 233, 255);
+// static final gradientEnd = Colors.blue.shade50;
+
 class AppTheme {
   static const Color primaryColor = Color(0xFF2563EB); // Modern Blue
   static const Color secondaryColor = Color(0xFF3B82F6);

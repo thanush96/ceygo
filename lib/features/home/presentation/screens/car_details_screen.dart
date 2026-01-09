@@ -6,8 +6,8 @@ import 'package:ceygo_app/features/home/presentation/providers/home_providers.da
 // Constants
 class _AppColors {
   static const primaryBlue = Color(0xFF2563EB);
-  static const gradientStart = Color.fromARGB(255, 206, 233, 255);
-  static final gradientEnd = Colors.blue.shade50;
+  static const gradientStart = Color.fromARGB(255, 219, 240, 255);
+  static final gradientEnd = Color.fromARGB(255, 233, 243, 250);
 }
 
 class _Dimensions {
