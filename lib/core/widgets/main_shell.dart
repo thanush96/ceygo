@@ -1,9 +1,10 @@
+import 'package:ceygo_app/features/home/presentation/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ceygo_app/core/widgets/bottom_nav_bar.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:ceygo_app/core/providers/navigation_provider.dart';
-import 'package:ceygo_app/features/home/presentation/screens/home_content.dart';
+// import 'package:ceygo_app/features/home/presentation/screens/home_content.dart';
 import 'package:ceygo_app/features/booking/presentation/screens/history_content.dart';
 import 'package:ceygo_app/features/home/presentation/screens/favorites_content.dart';
 import 'package:ceygo_app/features/booking/presentation/screens/chat_content.dart';

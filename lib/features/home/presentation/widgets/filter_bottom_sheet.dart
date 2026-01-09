@@ -18,6 +18,10 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
   // Price range
   RangeValues _priceRange = const RangeValues(5000, 30000);
 
+  // Price text controllers
+  late TextEditingController _minPriceController;
+  late TextEditingController _maxPriceController;
+
   // Transmission
   String _selectedTransmission = 'All';
   final List<String> _transmissionOptions = ['All', 'Automatic', 'Manual'];
@@ -25,6 +29,35 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
   // Number of seats
   String _selectedSeats = 'All';
   final List<String> _seatsOptions = ['All', '2', '4', '5', '7', '15+'];
+
+  @override
+  void initState() {
+    super.initState();
+    _minPriceController = TextEditingController(
+      text: _priceRange.start.toInt().toString(),
+    );
+    _maxPriceController = TextEditingController(
+      text: _priceRange.end.toInt().toString(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _minPriceController.dispose();
+    _maxPriceController.dispose();
+    super.dispose();
+  }
+
+  void _updatePriceRange() {
+    final minPrice = double.tryParse(_minPriceController.text) ?? 1000;
+    final maxPrice = double.tryParse(_maxPriceController.text) ?? 50000;
+    setState(() {
+      _priceRange = RangeValues(
+        minPrice.clamp(1000, 50000),
+        maxPrice.clamp(1000, 50000),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +83,19 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Filters',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              Row(
+                children: [
+                  Icon(Icons.tune, color: Colors.black87, size: 24),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Filter',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
               ),
               TextButton(
                 onPressed: _resetFilters,
@@ -139,14 +182,14 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                // const SizedBox(height: 12),
                 SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     activeTrackColor: theme.primaryColor,
                     inactiveTrackColor: Colors.grey[200],
                     thumbColor: theme.primaryColor,
                     overlayColor: theme.primaryColor.withOpacity(0.2),
-                    trackHeight: 6,
+                    trackHeight: 10,
                     thumbShape: const RoundSliderThumbShape(
                       enabledThumbRadius: 10,
                     ),
@@ -176,88 +219,333 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                 const SizedBox(height: 28),
 
                 // Rental / Hire Price Section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Rental Price (per day)',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      'Rs. ${_priceRange.start.toInt()} - ${_priceRange.end.toInt()}',
-                      style: TextStyle(
-                        color: theme.primaryColor,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
+                const Text(
+                  'Price (Rs.)',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 12),
-                SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
-                    activeTrackColor: theme.primaryColor,
-                    inactiveTrackColor: Colors.grey[200],
-                    thumbColor: theme.primaryColor,
-                    overlayColor: theme.primaryColor.withOpacity(0.2),
-                    trackHeight: 6,
-                    rangeThumbShape: const RoundRangeSliderThumbShape(
-                      enabledThumbRadius: 10,
-                    ),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F7FA),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: RangeSlider(
-                    values: _priceRange,
-                    min: 1000,
-                    max: 50000,
-                    divisions: 49,
-                    onChanged: (values) => setState(() => _priceRange = values),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Minimum',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey.shade200),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _minPriceController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: const InputDecoration(
+                                        border: InputBorder.none,
+                                        enabledBorder: InputBorder.none,
+                                        focusedBorder: InputBorder.none,
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.zero,
+                                      ),
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      onChanged: (_) => _updatePriceRange(),
+                                    ),
+                                  ),
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          final current =
+                                              int.tryParse(
+                                                _minPriceController.text,
+                                              ) ??
+                                              0;
+                                          _minPriceController.text =
+                                              (current + 100).toString();
+                                          _updatePriceRange();
+                                        },
+                                        child: Icon(
+                                          Icons.keyboard_arrow_up,
+                                          size: 18,
+                                          color: Colors.grey[400],
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          final current =
+                                              int.tryParse(
+                                                _minPriceController.text,
+                                              ) ??
+                                              0;
+                                          if (current >= 100) {
+                                            _minPriceController.text =
+                                                (current - 100).toString();
+                                            _updatePriceRange();
+                                          }
+                                        },
+                                        child: Icon(
+                                          Icons.keyboard_arrow_down,
+                                          size: 18,
+                                          color: Colors.grey[400],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Maximum',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey.shade200),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _maxPriceController,
+                                      keyboardType: TextInputType.number,
+                                      decoration: const InputDecoration(
+                                        border: InputBorder.none,
+                                        enabledBorder: InputBorder.none,
+                                        focusedBorder: InputBorder.none,
+                                        isDense: true,
+                                        contentPadding: EdgeInsets.zero,
+                                      ),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      onChanged: (_) => _updatePriceRange(),
+                                    ),
+                                  ),
+                                  Column(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () {
+                                          final current =
+                                              int.tryParse(
+                                                _maxPriceController.text,
+                                              ) ??
+                                              0;
+                                          _maxPriceController.text =
+                                              (current + 100).toString();
+                                          _updatePriceRange();
+                                        },
+                                        child: Icon(
+                                          Icons.keyboard_arrow_up,
+                                          size: 18,
+                                          color: Colors.grey[400],
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          final current =
+                                              int.tryParse(
+                                                _maxPriceController.text,
+                                              ) ??
+                                              0;
+                                          if (current >= 100) {
+                                            _maxPriceController.text =
+                                                (current - 100).toString();
+                                            _updatePriceRange();
+                                          }
+                                        },
+                                        child: Icon(
+                                          Icons.keyboard_arrow_down,
+                                          size: 18,
+                                          color: Colors.grey[400],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Rs. 1,000',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                    ),
-                    Text(
-                      'Rs. 50,000',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                    ),
-                  ],
                 ),
 
                 const SizedBox(height: 28),
 
-                // Other Options Section
+                // Other Preferences Section
                 const Text(
-                  'Other Options',
+                  'Other Preferences',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
-                const SizedBox(height: 16),
-
-                // Transmission Dropdown
-                _buildDropdown(
-                  label: 'Transmission',
-                  value: _selectedTransmission,
-                  options: _transmissionOptions,
-                  onChanged:
-                      (value) => setState(() => _selectedTransmission = value!),
-                  theme: theme,
-                ),
-
-                const SizedBox(height: 16),
-
-                // Number of Seats Dropdown
-                _buildDropdown(
-                  label: 'Number of Seats',
-                  value: _selectedSeats,
-                  options: _seatsOptions,
-                  onChanged: (value) => setState(() => _selectedSeats = value!),
-                  theme: theme,
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F7FA),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Transmission',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey.shade200),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: _selectedTransmission,
+                                  isExpanded: true,
+                                  isDense: false,
+                                  icon: Icon(
+                                    Icons.keyboard_arrow_down,
+                                    color: Colors.grey[400],
+                                  ),
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  items:
+                                      _transmissionOptions
+                                          .map(
+                                            (option) => DropdownMenuItem(
+                                              value: option,
+                                              child: Text(option),
+                                            ),
+                                          )
+                                          .toList(),
+                                  onChanged:
+                                      (value) => setState(
+                                        () => _selectedTransmission = value!,
+                                      ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Number of Seats',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey.shade200),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: _selectedSeats,
+                                  isExpanded: true,
+                                  isDense: false,
+                                  icon: Icon(
+                                    Icons.keyboard_arrow_down,
+                                    color: Colors.grey[400],
+                                  ),
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  items:
+                                      _seatsOptions
+                                          .map(
+                                            (option) => DropdownMenuItem(
+                                              value: option,
+                                              child: Text(option),
+                                            ),
+                                          )
+                                          .toList(),
+                                  onChanged:
+                                      (value) => setState(
+                                        () => _selectedSeats = value!,
+                                      ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
                 const SizedBox(height: 32),
@@ -269,7 +557,12 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
         // Apply Button
         SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.only(
+              left: 20,
+              right: 20,
+              bottom: 0,
+              top: 10,
+            ),
             child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -284,7 +577,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                   elevation: 0,
                 ),
                 child: const Text(
-                  'Apply Filters',
+                  'Apply Filter',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
@@ -355,75 +648,13 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     );
   }
 
-  Widget _buildDropdown({
-    required String label,
-    required String value,
-    required List<String> options,
-    required ValueChanged<String?> onChanged,
-    required ThemeData theme,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            label == 'Transmission'
-                ? Icons.settings_outlined
-                : Icons.event_seat_outlined,
-            color: Colors.grey[600],
-            size: 22,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 11),
-                ),
-                DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: value,
-                    isExpanded: true,
-                    isDense: true,
-                    icon: const SizedBox.shrink(),
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    items:
-                        options
-                            .map(
-                              (option) => DropdownMenuItem(
-                                value: option,
-                                child: Text(option),
-                              ),
-                            )
-                            .toList(),
-                    onChanged: onChanged,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Icon(Icons.keyboard_arrow_down, color: Colors.grey[600]),
-        ],
-      ),
-    );
-  }
-
   void _resetFilters() {
     setState(() {
       _selectedBrand = null;
       _radius = 25.0;
       _priceRange = const RangeValues(5000, 30000);
+      _minPriceController.text = '5000';
+      _maxPriceController.text = '30000';
       _selectedTransmission = 'All';
       _selectedSeats = 'All';
     });
@@ -449,10 +680,11 @@ Future<Map<String, dynamic>?> showFilterBottomSheet(BuildContext context) {
     backgroundColor: Colors.transparent,
     builder:
         (context) => Container(
-          height: MediaQuery.of(context).size.height * 0.85,
+          margin: const EdgeInsets.all(10),
+          height: MediaQuery.of(context).size.height * 0.75,
           decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius: BorderRadius.all(Radius.circular(24)),
           ),
           child: const FilterBottomSheet(),
         ),
