@@ -53,6 +53,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
+        resizeToAvoidBottomInset: true,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
@@ -75,173 +76,185 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ),
           centerTitle: true,
         ),
-        body: Column(
-          children: [
-            // Search Input
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(25),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        focusNode: _focusNode,
-                        autofocus: true,
-                        enabled: true,
-                        decoration: InputDecoration(
-                          hintText: l10n.search,
-                          hintStyle: TextStyle(
-                            color: Colors.grey[600],
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Search Input
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          focusNode: _focusNode,
+                          autofocus: true,
+                          enabled: true,
+                          decoration: InputDecoration(
+                            hintText: l10n.search,
+                            hintStyle: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 16,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 14,
+                            ),
+                          ),
+                          style: const TextStyle(
                             fontSize: 16,
+                            color: Colors.black,
                           ),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 14,
-                          ),
-                        ),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.black,
-                        ),
-                        textInputAction: TextInputAction.search,
-                        onSubmitted: _performSearch,
-                        onChanged: (value) {
-                          // Real-time search as user types
-                          _performSearch(value);
-                        },
-                      ),
-                    ),
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(25),
-                        onTap: () {
-                          _performSearch(_searchController.text);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(10.0),
-                          decoration: BoxDecoration(
-                            color: theme.primaryColor,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.search, color: Colors.white),
+                          textInputAction: TextInputAction.search,
+                          onSubmitted: _performSearch,
+                          onChanged: (value) {
+                            // Real-time search as user types
+                            _performSearch(value);
+                          },
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                  ],
+                      Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(25),
+                          onTap: () {
+                            _performSearch(_searchController.text);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(10.0),
+                            decoration: BoxDecoration(
+                              color: theme.primaryColor,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.search,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            // Search Results
-            Expanded(
-              child: carsAsyncValue.when(
-                data: (cars) {
-                  // Filter cars based on search query
-                  final filteredCars =
-                      _searchQuery.isEmpty
-                          ? cars
-                          : cars.where((car) {
-                            final query = _searchQuery.toLowerCase();
-                            return car.name.toLowerCase().contains(query) ||
-                                car.brand.toLowerCase().contains(query) ||
-                                car.transmission.toLowerCase().contains(
-                                  query,
-                                ) ||
-                                car.fuelType.toLowerCase().contains(query);
-                          }).toList();
+              // Search Results
+              Expanded(
+                child: carsAsyncValue.when(
+                  data: (cars) {
+                    // Filter cars based on search query
+                    final filteredCars =
+                        _searchQuery.isEmpty
+                            ? cars
+                            : cars.where((car) {
+                              final query = _searchQuery.toLowerCase();
+                              return car.name.toLowerCase().contains(query) ||
+                                  car.brand.toLowerCase().contains(query) ||
+                                  car.transmission.toLowerCase().contains(
+                                    query,
+                                  ) ||
+                                  car.fuelType.toLowerCase().contains(query);
+                            }).toList();
 
-                  if (_searchQuery.isNotEmpty && filteredCars.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.search_off,
-                            size: 64,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No cars found for "$_searchQuery"',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[600],
+                    if (_searchQuery.isNotEmpty && filteredCars.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off,
+                              size: 64,
+                              color: Colors.grey[400],
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Try a different search term',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[500],
+                            const SizedBox(height: 16),
+                            Text(
+                              'No cars found for "$_searchQuery"',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  if (_searchQuery.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.search, size: 64, color: Colors.grey[400]),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Search for cars',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[600],
+                            const SizedBox(height: 8),
+                            Text(
+                              'Try a different search term',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Enter car name, brand, or type',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    itemCount: filteredCars.length,
-                    itemBuilder: (context, index) {
-                      final car = filteredCars[index];
-                      return CarCard(
-                        car: car,
-                        onTap: () {
-                          context.push('/car-details/${car.id}');
-                        },
+                          ],
+                        ),
                       );
-                    },
-                  );
-                },
-                error: (err, stack) => Center(child: Text('Error: $err')),
-                loading: () => const Center(child: CircularProgressIndicator()),
+                    }
+
+                    if (_searchQuery.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search,
+                              size: 64,
+                              color: Colors.grey[400],
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Search for cars',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Enter car name, brand, or type',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      itemCount: filteredCars.length,
+                      itemBuilder: (context, index) {
+                        final car = filteredCars[index];
+                        return CarCard(
+                          car: car,
+                          onTap: () {
+                            context.push('/car-details/${car.id}');
+                          },
+                        );
+                      },
+                    );
+                  },
+                  error: (err, stack) => Center(child: Text('Error: $err')),
+                  loading:
+                      () => const Center(child: CircularProgressIndicator()),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
