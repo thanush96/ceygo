@@ -76,8 +76,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         'Checkout',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 20,
+                          // fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),

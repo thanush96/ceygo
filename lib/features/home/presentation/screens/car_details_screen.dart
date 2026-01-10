@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/features/home/presentation/providers/home_providers.dart';
+import 'package:ceygo_app/core/widgets/photo_gallery.dart';
 
 // Constants
 class _AppColors {
@@ -14,7 +15,6 @@ class _Dimensions {
   static const double appBarIconSize = 18.0;
   static const double appBarButtonRadius = 18.0;
   static const double cardRadius = 20.0;
-  static const double photoSize = 80.0;
   static const double bottomButtonRadius = 40.0;
 }
 
@@ -96,7 +96,7 @@ class _TopAppBar extends StatelessWidget {
                 icon: Icons.arrow_back,
                 onPressed: () => context.pop(),
               ),
-              const Text('Car Detail', style: TextStyle(fontSize: 17)),
+              const Text('Car Detail', style: TextStyle(fontSize: 20)),
               _AppBarButton(icon: Icons.favorite_border, onPressed: () {}),
             ],
           ),
@@ -144,7 +144,7 @@ class _HeroSection extends StatelessWidget {
         children: [
           _CarImageWithSpecs(car: car),
           const SizedBox(height: 20),
-          _PhotoGallery(car: car),
+          PhotoGallery(car: car),
           const SizedBox(height: 20),
           _DescriptionCard(car: car),
         ],
@@ -203,40 +203,6 @@ class _CarImageWithSpecs extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _PhotoGallery extends StatelessWidget {
-  final dynamic car;
-
-  const _PhotoGallery({required this.car});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: _Dimensions.photoSize,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        scrollDirection: Axis.horizontal,
-        itemCount: 4,
-        itemBuilder: (_, index) {
-          if (index == 3) return const _MorePhotosCard();
-          return Container(
-            width: _Dimensions.photoSize,
-            margin: const EdgeInsets.only(right: 12),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.grey.shade200,
-              image: DecorationImage(
-                image: AssetImage(car.imageUrl),
-                fit: BoxFit.cover,
-                onError: (_, __) {},
-              ),
-            ),
-          );
-        },
       ),
     );
   }
@@ -465,31 +431,6 @@ class _SpecItem extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _MorePhotosCard extends StatelessWidget {
-  const _MorePhotosCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: _Dimensions.photoSize,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        color: Colors.black.withOpacity(0.7),
-      ),
-      child: const Center(
-        child: Text(
-          '+5',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
     );
   }
 }

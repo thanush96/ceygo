@@ -10,39 +10,46 @@ class ProfileContent extends StatelessWidget {
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
+
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          title: const Text("Profile"),
+          automaticallyImplyLeading: false,
+        ),
+
         body: SafeArea(
           child: Column(
             children: [
               // Custom App Bar
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => context.pop(),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.arrow_back_ios_new, size: 20),
-                      ),
-                    ),
-                    const Expanded(
-                      child: Text(
-                        'Profile',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 44), // Balance the back button
-                  ],
-                ),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.all(16),
+              //   child: Row(
+              //     children: [
+              //       // GestureDetector(
+              //       //   onTap: () => context.pop(),
+              //       //   child: Container(
+              //       //     padding: const EdgeInsets.all(12),
+              //       //     decoration: BoxDecoration(
+              //       //       color: Colors.white,
+              //       //       borderRadius: BorderRadius.circular(12),
+              //       //     ),
+              //       //     child: const Icon(Icons.arrow_back_ios_new, size: 20),
+              //       //   ),
+              //       // ),
+              //       const Expanded(
+              //         child: Text(
+              //           'Profile',
+              //           textAlign: TextAlign.center,
+              //           style: TextStyle(
+              //             fontSize: 20,
+              //             fontWeight: FontWeight.w600,
+              //           ),
+              //         ),
+              //       ),
+              //       // const SizedBox(width: 44), // Balance the back button
+              //     ],
+              //   ),
+              // ),
 
               // Content
               Expanded(
