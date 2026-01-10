@@ -198,7 +198,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                     value: _radius,
                     min: 5,
                     max: 100,
-                    divisions: 19,
+                    // divisions: 10,
                     onChanged: (value) => setState(() => _radius = value),
                   ),
                 ),
