@@ -112,7 +112,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: [
                   CircleAvatar(
                     radius: 28,
-                    backgroundColor: Colors.grey[300],
+                    backgroundColor: Theme.of(context).primaryColor,
                     child: Text(
                       conversation.customerName
                           .split(' ')

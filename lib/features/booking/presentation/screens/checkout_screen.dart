@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
+import 'package:ceygo_app/features/booking/domain/models/booking.dart';
+import 'package:ceygo_app/features/booking/presentation/providers/booking_providers.dart';
+import 'package:ceygo_app/core/providers/navigation_provider.dart';
 
-class CheckoutScreen extends StatefulWidget {
+class CheckoutScreen extends ConsumerStatefulWidget {
   final dynamic car;
 
   const CheckoutScreen({super.key, required this.car});
 
   @override
-  State<CheckoutScreen> createState() => _CheckoutScreenState();
+  ConsumerState<CheckoutScreen> createState() => _CheckoutScreenState();
 }
 
-class _CheckoutScreenState extends State<CheckoutScreen> {
+class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   int _pickupOption = 0; // 0 = dealership, 1 = deliver
   int _paymentOption = 0; // 0 = visa
   DateTime? _startDate;
@@ -61,7 +65,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             CustomAppBar(
               title: 'Checkout',
               useCustomStyle: true,
-              leftIcon: Icons.chevron_left,
+              leftIcon: Icons.arrow_back,
               onLeftPressed: () => context.pop(),
             ),
 
@@ -243,10 +247,55 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             top: false,
             child: ElevatedButton(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Booking Successful!")),
+                if (_startDate == null || _endDate == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Please select date and time"),
+                    ),
+                  );
+                  return;
+                }
+
+                // Calculate total price
+                final days = _endDate!.difference(_startDate!).inDays;
+                final totalPrice = widget.car.pricePerDay * days;
+
+                // Create booking
+                final booking = Booking(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  car: widget.car,
+                  startDate: _startDate!,
+                  endDate: _endDate!,
+                  pickupTime:
+                      _pickupTime != null
+                          ? _pickupTime!.format(context)
+                          : 'Not set',
+                  pickupLocation:
+                      _pickupOption == 0
+                          ? 'Pickup from the dealership'
+                          : 'Deliver to my location',
+                  paymentMethod: 'Visa ending in 1111',
+                  totalPrice: totalPrice,
+                  bookingDate: DateTime.now(),
                 );
-                context.go('/home');
+
+                // Add to booking history
+                ref.read(bookingHistoryProvider.notifier).addBooking(booking);
+
+                // Show success message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Booking Successful!"),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+
+                // Navigate to booking history
+                context.go('/history');
+                // Set tab to history (index 1) after navigation
+                Future.microtask(
+                  () => ref.read(currentTabIndexProvider.notifier).setIndex(1),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2563EB),

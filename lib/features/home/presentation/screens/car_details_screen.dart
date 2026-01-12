@@ -51,13 +51,17 @@ class CarDetailsScreen extends ConsumerWidget {
   }
 }
 
-class _CarDetailsContent extends StatelessWidget {
+class _CarDetailsContent extends ConsumerWidget {
   final dynamic car;
 
   const _CarDetailsContent({required this.car});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final favorites = ref.watch(favoritesProvider.notifier);
+    final favoritesList = ref.watch(favoritesProvider);
+    final isFavorite = favoritesList.any((c) => c.id == car.id);
+
     return Stack(
       children: [
         SingleChildScrollView(
@@ -75,8 +79,8 @@ class _CarDetailsContent extends StatelessWidget {
           backgroundColor: _AppColors.gradientStart,
           leftIcon: Icons.arrow_back,
           onLeftPressed: () => context.pop(),
-          rightIcon: Icons.favorite_border,
-          onRightPressed: () {},
+          rightIcon: isFavorite ? Icons.favorite : Icons.favorite_border,
+          onRightPressed: () => favorites.toggleFavorite(car),
         ),
         _BottomBookButton(car: car),
       ],
