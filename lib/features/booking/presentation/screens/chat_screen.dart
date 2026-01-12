@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
 
@@ -224,6 +226,59 @@ class ChatDetailScreen extends StatefulWidget {
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final TextEditingController _controller = TextEditingController();
   final List<Message> _messages = [];
+  final ImagePicker _imagePicker = ImagePicker();
+  bool _showEmojiPicker = false;
+
+  final List<String> _emojis = [
+    '😀',
+    '😂',
+    '❤️',
+    '👍',
+    '🎉',
+    '🔥',
+    '😍',
+    '🎈',
+    '🙌',
+    '✨',
+    '😎',
+    '👌',
+    '🚀',
+    '💪',
+    '🌟',
+    '😊',
+    '😢',
+    '😴',
+    '🤔',
+    '😱',
+    '🤗',
+    '😘',
+    '😝',
+    '🙈',
+    '🐱',
+    '🐶',
+    '🐰',
+    '🦊',
+    '🐻',
+    '🐼',
+    '🐨',
+    '🐯',
+    '🍕',
+    '🍔',
+    '🍟',
+    '🌮',
+    '🍜',
+    '🍱',
+    '🍰',
+    '🍪',
+    '☕',
+    '🍷',
+    '🍺',
+    '⚽',
+    '🏀',
+    '🎾',
+    '🎮',
+    '🎲',
+  ];
 
   @override
   void initState() {
@@ -266,6 +321,46 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         }
       });
     }
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+      );
+      if (image != null) {
+        setState(() {
+          _messages.add(
+            Message(imagePath: image.path, isMe: true, time: "Now"),
+          );
+        });
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) {
+            setState(() {
+              _messages.add(
+                Message(text: "Nice image!", isMe: false, time: "Now"),
+              );
+            });
+          }
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Error picking image')));
+    }
+  }
+
+  void _insertEmoji(String emoji) {
+    final text = _controller.text;
+    final selection = _controller.selection;
+    final newText = text.replaceRange(selection.start, selection.end, emoji);
+    _controller.value = _controller.value.copyWith(
+      text: newText,
+      selection: TextSelection.collapsed(
+        offset: selection.start + emoji.length,
+      ),
+    );
   }
 
   @override
@@ -394,12 +489,23 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text(
-                            msg.text,
-                            style: TextStyle(
-                              color: msg.isMe ? Colors.white : Colors.black,
+                          if (msg.imagePath != null)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.file(
+                                File(msg.imagePath!),
+                                width: 200,
+                                height: 200,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          else if (msg.text != null)
+                            Text(
+                              msg.text!,
+                              style: TextStyle(
+                                color: msg.isMe ? Colors.white : Colors.black,
+                              ),
                             ),
-                          ),
                           const SizedBox(height: 4),
                           Text(
                             msg.time,
@@ -417,36 +523,97 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Row(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: InputDecoration(
-                        hintText: "Type a message...",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                        ),
+                  if (_showEmojiPicker)
+                    Container(
+                      height: 250,
+                      color: Colors.white,
+                      child: GridView.builder(
+                        padding: const EdgeInsets.all(8),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 8,
+                            ),
+                        itemCount: _emojis.length,
+                        itemBuilder: (context, index) {
+                          return InkWell(
+                            onTap: () {
+                              _insertEmoji(_emojis[index]);
+                            },
+                            child: Center(
+                              child: Text(
+                                _emojis[index],
+                                style: const TextStyle(fontSize: 32),
+                              ),
+                            ),
+                          );
+                        },
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  CircleAvatar(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.send,
-                        color: Colors.white,
-                        size: 20,
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.emoji_emotions_outlined),
+                        onPressed: () {
+                          setState(() {
+                            _showEmojiPicker = !_showEmojiPicker;
+                          });
+                        },
                       ),
-                      onPressed: _sendMessage,
-                    ),
+                      IconButton(
+                        icon: const Icon(Icons.image_outlined),
+                        onPressed: _pickImage,
+                      ),
+                      Expanded(
+                        child: TextField(
+                          controller: _controller,
+                          decoration: InputDecoration(
+                            hintText: "Type a message...",
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(24),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(24),
+                              borderSide: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).primaryColor.withOpacity(0.5),
+                                width: 1.6,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(24),
+                              borderSide: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).primaryColor.withOpacity(0.5),
+                                width: 1.6,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      CircleAvatar(
+                        backgroundColor: Theme.of(context).primaryColor,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.send,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          onPressed: _sendMessage,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -486,9 +653,10 @@ class ChatConversation {
 }
 
 class Message {
-  final String text;
+  final String? text;
   final bool isMe;
   final String time;
+  final String? imagePath;
 
-  Message({required this.text, required this.isMe, required this.time});
+  Message({this.text, required this.isMe, required this.time, this.imagePath});
 }
