@@ -7,6 +7,7 @@ import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:ceygo_app/core/widgets/bottom_nav_bar.dart';
 import 'package:ceygo_app/features/home/data/mock_car_repository.dart';
 import 'package:ceygo_app/features/home/presentation/widgets/filter_bottom_sheet.dart';
+import 'package:ceygo_app/features/home/presentation/widgets/location_picker_bottom_sheet.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -27,12 +28,15 @@ class _HomeScreenState extends State<HomeScreen> {
         // Already on home
         break;
       case 1:
-        context.go('/favorites');
+        context.go('/history');
         break;
       case 2:
-        context.go('/chat');
+        context.go('/favorites');
         break;
       case 3:
+        context.go('/chat');
+        break;
+      case 4:
         context.go('/profile');
         break;
     }
@@ -53,11 +57,32 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class HomeContent extends ConsumerWidget {
+class HomeContent extends ConsumerStatefulWidget {
   const HomeContent({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends ConsumerState<HomeContent> {
+  String _selectedLocation = 'Colombo, Sri Lanka';
+  String? _selectedBrand; // null means "All" is selected
+  late TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final carsAsyncValue = ref.watch(carListProvider);
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
@@ -81,14 +106,18 @@ class HomeContent extends ConsumerWidget {
           centerTitle: true,
           title: GestureDetector(
             onTap: () {
-              // TODO: Show location picker bottom sheet
+              showLocationPicker(
+                context,
+                currentLocation: _selectedLocation,
+                onLocationSelected: (location) {
+                  setState(() {
+                    _selectedLocation = location;
+                  });
+                },
+              );
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              // decoration: BoxDecoration(
-              //   color: Colors.white,
-              //   borderRadius: BorderRadius.circular(20),
-              // ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -107,7 +136,7 @@ class HomeContent extends ConsumerWidget {
                         ),
                       ),
                       Text(
-                        "Colombo, Sri Lanka",
+                        _selectedLocation,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: Colors.grey[800],
                           fontWeight: FontWeight.w600,
@@ -182,43 +211,65 @@ class HomeContent extends ConsumerWidget {
                       children: [
                         // Search Bar
                         Expanded(
-                          child: GestureDetector(
-                            onTap: () {
-                              // context.push('/search'); // TODO: Implement Search
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(25),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Text(
-                                      l10n.search,
-                                      style: TextStyle(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(25),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: TextField(
+                                    controller: _searchController,
+                                    onChanged: (_) {
+                                      setState(() {});
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText: l10n.search,
+                                      hintStyle: TextStyle(
                                         color: Colors.grey[600],
                                         fontSize: 16,
                                       ),
+                                      border: InputBorder.none,
+                                      enabledBorder: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                      errorBorder: InputBorder.none,
+                                      focusedErrorBorder: InputBorder.none,
+
+                                      isDense: true,
+                                      contentPadding: EdgeInsets.zero,
                                     ),
+                                    style: const TextStyle(fontSize: 16),
                                   ),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: theme.primaryColor,
-                                      shape: BoxShape.circle,
-                                    ),
+                                ),
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: theme.primaryColor,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      context.push(
+                                        '/search',
+                                        extra: {
+                                          'query': _searchController.text,
+                                          'brand': _selectedBrand,
+                                          'location': _selectedLocation,
+                                        },
+                                      );
+                                    },
                                     child: const Padding(
                                       padding: EdgeInsets.all(10.0),
                                       child: Icon(
@@ -227,8 +278,8 @@ class HomeContent extends ConsumerWidget {
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -263,75 +314,119 @@ class HomeContent extends ConsumerWidget {
                       child: Row(
                         children: [
                           // "All" chip
-                          Container(
-                            margin: const EdgeInsets.only(right: 6),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 13,
-                            ),
-                            decoration: BoxDecoration(
-                              color: theme.primaryColor,
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.apps,
-                                  color: Colors.white,
-                                  size: 18,
-                                ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  "All",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Brand chips from mock data
-                          ...MockCarRepository.getBrands().map((brand) {
-                            return Container(
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _selectedBrand = null;
+                              });
+                            },
+                            child: Container(
                               margin: const EdgeInsets.only(right: 6),
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 11,
+                                horizontal: 20,
+                                vertical: 13,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color:
+                                    _selectedBrand == null
+                                        ? theme.primaryColor
+                                        : Colors.white,
                                 borderRadius: BorderRadius.circular(30),
-                                border: Border.all(color: Colors.grey.shade300),
+                                border:
+                                    _selectedBrand == null
+                                        ? null
+                                        : Border.all(
+                                          color: Colors.grey.shade300,
+                                        ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: Image.network(
-                                      brand['logo']!,
-                                      width: 26,
-                                      height: 26,
-                                      fit: BoxFit.contain,
-                                      errorBuilder:
-                                          (ctx, _, __) => const Icon(
-                                            Icons.directions_car,
-                                            size: 18,
-                                            color: Colors.grey,
-                                          ),
-                                    ),
+                                  Icon(
+                                    Icons.apps,
+                                    color:
+                                        _selectedBrand == null
+                                            ? Colors.white
+                                            : Colors.black,
+                                    size: 18,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    brand['name']!,
-                                    style: const TextStyle(
-                                      color: Colors.black,
+                                    "All",
+                                    style: TextStyle(
+                                      color:
+                                          _selectedBrand == null
+                                              ? Colors.white
+                                              : Colors.black,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ],
+                              ),
+                            ),
+                          ),
+                          // Brand chips from mock data
+                          ...MockCarRepository.getBrands().map((brand) {
+                            final isSelected = _selectedBrand == brand['name'];
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedBrand = brand['name'];
+                                });
+                              },
+                              child: Container(
+                                margin: const EdgeInsets.only(right: 6),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color:
+                                      isSelected
+                                          ? theme.primaryColor
+                                          : Colors.white,
+                                  borderRadius: BorderRadius.circular(30),
+                                  border:
+                                      isSelected
+                                          ? null
+                                          : Border.all(
+                                            color: Colors.grey.shade300,
+                                          ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: Image.network(
+                                        brand['logo']!,
+                                        width: 32,
+                                        height: 32,
+                                        fit: BoxFit.contain,
+                                        errorBuilder:
+                                            (ctx, _, __) => Icon(
+                                              Icons.directions_car,
+                                              size: 18,
+                                              color:
+                                                  isSelected
+                                                      ? Colors.white
+                                                      : Colors.grey,
+                                            ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      brand['name']!,
+                                      style: TextStyle(
+                                        color:
+                                            isSelected
+                                                ? Colors.white
+                                                : Colors.black,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           }),
@@ -365,21 +460,25 @@ class HomeContent extends ConsumerWidget {
 
             // Car List Grid
             carsAsyncValue.when(
-              data:
-                  (cars) => SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        final car = cars[index];
-                        return CarCard(
-                          car: car,
-                          onTap: () {
-                            context.push('/car-details/${car.id}');
-                          },
-                        );
-                      }, childCount: cars.length),
-                    ),
+              data: (cars) {
+                // Display all cars without any filtering
+                final allCars = cars;
+
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final car = allCars[index];
+                      return CarCard(
+                        car: car,
+                        onTap: () {
+                          context.push('/car-details/${car.id}');
+                        },
+                      );
+                    }, childCount: allCars.length),
                   ),
+                );
+              },
               error:
                   (err, stack) => SliverToBoxAdapter(
                     child: Center(child: Text('Error: $err')),

@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/features/home/presentation/providers/home_providers.dart';
@@ -8,8 +12,17 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   final String? initialQuery;
+  final String? initialSearchQuery;
+  final String? initialSelectedBrand;
+  final String? initialSelectedLocation;
 
-  const SearchScreen({super.key, this.initialQuery});
+  const SearchScreen({
+    super.key,
+    this.initialQuery,
+    this.initialSearchQuery,
+    this.initialSelectedBrand,
+    this.initialSelectedLocation,
+  });
 
   @override
   ConsumerState<SearchScreen> createState() => _SearchScreenState();
@@ -19,16 +32,54 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   late TextEditingController _searchController;
   final FocusNode _focusNode = FocusNode();
   String _searchQuery = '';
+  late String? _selectedBrand;
+  List<Map<String, String>> _allBrands = [];
+  bool _isLoadingBrands = false;
 
   @override
   void initState() {
     super.initState();
-    _searchController = TextEditingController(text: widget.initialQuery ?? '');
-    _searchQuery = widget.initialQuery ?? '';
+    final query = widget.initialSearchQuery ?? widget.initialQuery ?? '';
+    _searchController = TextEditingController(text: query);
+    _searchQuery = query;
+    _selectedBrand = widget.initialSelectedBrand;
+    _loadBrands();
     // Auto-focus the search field when screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
     });
+  }
+
+  Future<void> _loadBrands() async {
+    setState(() {
+      _isLoadingBrands = true;
+    });
+    try {
+      final jsonStr = await rootBundle.loadString(
+        'assets/data/car_manufacturers.json',
+      );
+      final List<dynamic> data = jsonDecode(jsonStr) as List<dynamic>;
+      _allBrands =
+          data
+              .whereType<Map<String, dynamic>>()
+              .map(
+                (e) => {
+                  'name': (e['name'] ?? '').toString(),
+                  'logo': (e['thumb'] ?? '').toString(),
+                },
+              )
+              .where((e) => e['name']!.isNotEmpty && e['logo']!.isNotEmpty)
+              .toList();
+    } catch (e) {
+      // Ignore errors; keep list empty on failure
+      _allBrands = [];
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingBrands = false;
+        });
+      }
+    }
   }
 
   @override
@@ -54,28 +105,37 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         resizeToAvoidBottomInset: true,
-        appBar: AppBar(
+        appBar: CustomAppBar(
+          title: l10n.search,
+          useCustomStyle: true,
           backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            onPressed: () => context.pop(),
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.arrow_back, color: Colors.black),
-            ),
-          ),
-          title: Text(
-            l10n.search,
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          centerTitle: true,
+          leftIcon: Icons.arrow_back,
+          onLeftPressed: () => context.pop(),
+          onRightPressed: () {},
         ),
+
+        // AppBar(
+        //   backgroundColor: Colors.transparent,
+        //   elevation: 0,
+        //   leading: IconButton(
+        //     onPressed: () => context.pop(),
+        //     icon: Container(
+        //       padding: const EdgeInsets.all(8),
+        //       decoration: BoxDecoration(
+        //         color: Colors.white,
+        //         shape: BoxShape.circle,
+        //       ),
+        //       child: const Icon(Icons.arrow_back, color: Colors.black),
+        //     ),
+        //   ),
+        //   title: Text(
+        //     l10n.search,
+        //     style: theme.textTheme.titleLarge?.copyWith(
+        //       fontWeight: FontWeight.bold,
+        //     ),
+        //   ),
+        //   centerTitle: true,
+        // ),
         body: SafeArea(
           child: Column(
             children: [
@@ -94,6 +154,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       ),
                     ],
                   ),
+                  padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
                     children: [
                       const SizedBox(width: 16),
@@ -110,8 +171,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               fontSize: 16,
                             ),
                             border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            errorBorder: InputBorder.none,
+                            focusedErrorBorder: InputBorder.none,
+                            isDense: true,
                             contentPadding: const EdgeInsets.symmetric(
-                              vertical: 14,
+                              vertical: 8,
                             ),
                           ),
                           style: const TextStyle(
@@ -152,23 +218,179 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ),
               ),
 
+              // Brand Chips
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                  bottom: 16.0,
+                  right: 16,
+                ),
+                child:
+                    _isLoadingBrands
+                        ? const SizedBox(
+                          height: 48,
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                        : SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              // "All" chip
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _selectedBrand = null;
+                                  });
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.only(right: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 13,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color:
+                                        _selectedBrand == null
+                                            ? theme.primaryColor
+                                            : Colors.white,
+                                    borderRadius: BorderRadius.circular(30),
+                                    border:
+                                        _selectedBrand == null
+                                            ? null
+                                            : Border.all(
+                                              color: Colors.grey.shade300,
+                                            ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.apps,
+                                        color:
+                                            _selectedBrand == null
+                                                ? Colors.white
+                                                : Colors.black,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        "All",
+                                        style: TextStyle(
+                                          color:
+                                              _selectedBrand == null
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              // Brand chips from asset list
+                              ..._allBrands.map((brand) {
+                                final isSelected =
+                                    _selectedBrand == brand['name'];
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedBrand = brand['name'];
+                                    });
+                                  },
+                                  child: Container(
+                                    margin: const EdgeInsets.only(right: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          isSelected
+                                              ? theme.primaryColor
+                                              : Colors.white,
+                                      borderRadius: BorderRadius.circular(30),
+                                      border:
+                                          isSelected
+                                              ? null
+                                              : Border.all(
+                                                color: Colors.grey.shade300,
+                                              ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                          child: Image.network(
+                                            brand['logo']!,
+                                            width: 32,
+                                            height: 32,
+                                            fit: BoxFit.contain,
+                                            errorBuilder:
+                                                (ctx, _, __) => Icon(
+                                                  Icons.directions_car,
+                                                  size: 18,
+                                                  color:
+                                                      isSelected
+                                                          ? Colors.white
+                                                          : Colors.grey,
+                                                ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          brand['name']!,
+                                          style: TextStyle(
+                                            color:
+                                                isSelected
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
+              ),
+
               // Search Results
               Expanded(
                 child: carsAsyncValue.when(
                   data: (cars) {
-                    // Filter cars based on search query
-                    final filteredCars =
-                        _searchQuery.isEmpty
-                            ? cars
-                            : cars.where((car) {
-                              final query = _searchQuery.toLowerCase();
-                              return car.name.toLowerCase().contains(query) ||
-                                  car.brand.toLowerCase().contains(query) ||
-                                  car.transmission.toLowerCase().contains(
-                                    query,
-                                  ) ||
-                                  car.fuelType.toLowerCase().contains(query);
-                            }).toList();
+                    // Filter cars based on search query and brand
+                    var filteredCars = cars;
+
+                    // Filter by brand
+                    if (_selectedBrand != null) {
+                      filteredCars =
+                          filteredCars
+                              .where((car) => car.brand == _selectedBrand)
+                              .toList();
+                    }
+
+                    // Filter by search query
+                    if (_searchQuery.isNotEmpty) {
+                      final query = _searchQuery.toLowerCase();
+                      filteredCars =
+                          filteredCars
+                              .where(
+                                (car) =>
+                                    car.name.toLowerCase().contains(query) ||
+                                    car.brand.toLowerCase().contains(query) ||
+                                    car.transmission.toLowerCase().contains(
+                                      query,
+                                    ) ||
+                                    car.fuelType.toLowerCase().contains(query),
+                              )
+                              .toList();
+                    }
 
                     if (_searchQuery.isNotEmpty && filteredCars.isEmpty) {
                       return Center(
@@ -201,7 +423,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       );
                     }
 
-                    if (_searchQuery.isEmpty) {
+                    if (_searchQuery.isEmpty && _selectedBrand == null) {
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,

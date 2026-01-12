@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:ceygo_app/core/widgets/gradient_background.dart';
-import 'package:ceygo_app/core/widgets/bottom_nav_bar.dart';
+import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -11,19 +9,241 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final TextEditingController _controller = TextEditingController();
-  final List<Message> _messages = [
-    Message(
-      text: "Hi, is the car available for tomorrow?",
-      isMe: true,
-      time: "10:00 AM",
+  final List<ChatConversation> _conversations = [
+    ChatConversation(
+      id: "1",
+      customerName: "John Doe",
+      profileImage: "https://via.placeholder.com/50?text=JD",
+      lastMessage: "Yes, it is available. Would you like to book it?",
+      lastMessageTime: "10:05 AM",
+      isOnline: true,
+      unreadCount: 0,
     ),
-    Message(
-      text: "Yes, it is available. Would you like to book it?",
-      isMe: false,
-      time: "10:05 AM",
+    ChatConversation(
+      id: "2",
+      customerName: "Sarah Smith",
+      profileImage: "https://via.placeholder.com/50?text=SS",
+      lastMessage: "Thank you for the quick response!",
+      lastMessageTime: "Yesterday",
+      isOnline: false,
+      unreadCount: 2,
+    ),
+    ChatConversation(
+      id: "3",
+      customerName: "Michael Johnson",
+      profileImage: "https://via.placeholder.com/50?text=MJ",
+      lastMessage: "When can I pick up the car?",
+      lastMessageTime: "2 hours ago",
+      isOnline: true,
+      unreadCount: 1,
+    ),
+    ChatConversation(
+      id: "4",
+      customerName: "Emma Williams",
+      profileImage: "https://via.placeholder.com/50?text=EW",
+      lastMessage: "Perfect! I'll confirm the booking tomorrow.",
+      lastMessageTime: "3 days ago",
+      isOnline: false,
+      unreadCount: 0,
+    ),
+    ChatConversation(
+      id: "5",
+      customerName: "David Brown",
+      profileImage: "https://via.placeholder.com/50?text=DB",
+      lastMessage: "Can I get a discount for weekly rental?",
+      lastMessageTime: "1 week ago",
+      isOnline: false,
+      unreadCount: 0,
     ),
   ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: CustomAppBar(
+        title: "Messages",
+        // actions: [
+        //   Padding(
+        //     padding: const EdgeInsets.only(right: 16),
+        //     child: IconButton(
+        //       icon: const Icon(Icons.add, color: Colors.black, size: 28),
+        //       onPressed: () {
+        //         // Handle new chat
+        //       },
+        //     ),
+        //   ),
+        // ],
+      ),
+      body: ListView.builder(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        itemCount: _conversations.length,
+        itemBuilder: (context, index) {
+          final conversation = _conversations[index];
+          return _buildChatTile(context, conversation);
+        },
+      ),
+    );
+  }
+
+  Widget _buildChatTile(BuildContext context, ChatConversation conversation) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          // Navigate to chat detail screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) => ChatDetailScreen(conversation: conversation),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              // Profile Picture with Online Status
+              Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Colors.grey[300],
+                    child: Text(
+                      conversation.customerName
+                          .split(' ')
+                          .map((e) => e[0])
+                          .join(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  if (conversation.isOnline)
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          border: Border.all(color: Colors.white, width: 2),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(width: 12),
+              // Chat Details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          conversation.customerName,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black,
+                          ),
+                        ),
+                        Text(
+                          conversation.lastMessageTime,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            conversation.lastMessage,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                        if (conversation.unreadCount > 0)
+                          Container(
+                            margin: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).primaryColor,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              conversation.unreadCount.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ChatDetailScreen extends StatefulWidget {
+  final ChatConversation conversation;
+
+  const ChatDetailScreen({super.key, required this.conversation});
+
+  @override
+  State<ChatDetailScreen> createState() => _ChatDetailScreenState();
+}
+
+class _ChatDetailScreenState extends State<ChatDetailScreen> {
+  final TextEditingController _controller = TextEditingController();
+  final List<Message> _messages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeMessages();
+  }
+
+  void _initializeMessages() {
+    _messages.addAll([
+      Message(
+        text: "Hi, is the car available for tomorrow?",
+        isMe: true,
+        time: "10:00 AM",
+      ),
+      Message(
+        text: widget.conversation.lastMessage,
+        isMe: false,
+        time: "10:05 AM",
+      ),
+    ]);
+  }
 
   void _sendMessage() {
     if (_controller.text.isNotEmpty) {
@@ -31,13 +251,12 @@ class _ChatScreenState extends State<ChatScreen> {
         _messages.add(Message(text: _controller.text, isMe: true, time: "Now"));
         _controller.clear();
       });
-      // Simulate reply
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
           setState(() {
             _messages.add(
               Message(
-                text: "Great! Let me know if you have any questions.",
+                text: "Thanks for your message!",
                 isMe: false,
                 time: "Now",
               ),
@@ -48,135 +267,168 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _onNavTap(int index) {
-    switch (index) {
-      case 0:
-        context.go('/');
-        break;
-      case 1:
-        context.go('/favorites');
-        break;
-      case 2:
-        // Already on chat
-        break;
-      case 3:
-        context.go('/profile');
-        break;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return GradientBackground(
-      child: Scaffold(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          title: const Text("Messages"),
-          automaticallyImplyLeading: false,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
         ),
-        body: Column(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  final msg = _messages[index];
-                  return Align(
-                    alignment:
-                        msg.isMe ? Alignment.centerRight : Alignment.centerLeft,
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color:
-                            msg.isMe
-                                ? Theme.of(context).primaryColor
-                                : Colors.grey[200],
-                        borderRadius: BorderRadius.only(
-                          topLeft: const Radius.circular(12),
-                          topRight: const Radius.circular(12),
-                          bottomLeft:
-                              msg.isMe
-                                  ? const Radius.circular(12)
-                                  : const Radius.circular(0),
-                          bottomRight:
-                              msg.isMe
-                                  ? const Radius.circular(0)
-                                  : const Radius.circular(12),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            msg.text,
-                            style: TextStyle(
-                              color: msg.isMe ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            msg.time,
-                            style: TextStyle(
-                              color: msg.isMe ? Colors.white70 : Colors.black54,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
+            Text(
+              widget.conversation.customerName,
+              style: const TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: InputDecoration(
-                        hintText: "Type a message...",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[100],
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  CircleAvatar(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.send,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                      onPressed: _sendMessage,
-                    ),
-                  ),
-                ],
+            Text(
+              widget.conversation.isOnline ? "Active now" : "Offline",
+              style: TextStyle(
+                color:
+                    widget.conversation.isOnline ? Colors.green : Colors.grey,
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
               ),
             ),
-            const SizedBox(height: 80),
           ],
         ),
-        bottomNavigationBar: BottomNavBar(currentIndex: 2, onTap: _onNavTap),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.call, color: Colors.black),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.more_vert, color: Colors.black),
+            onPressed: () {},
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _messages.length,
+              itemBuilder: (context, index) {
+                final msg = _messages[index];
+                return Align(
+                  alignment:
+                      msg.isMe ? Alignment.centerRight : Alignment.centerLeft,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color:
+                          msg.isMe
+                              ? Theme.of(context).primaryColor
+                              : Colors.grey[200],
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(12),
+                        topRight: const Radius.circular(12),
+                        bottomLeft:
+                            msg.isMe ? const Radius.circular(12) : Radius.zero,
+                        bottomRight:
+                            msg.isMe ? Radius.zero : const Radius.circular(12),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          msg.text,
+                          style: TextStyle(
+                            color: msg.isMe ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          msg.time,
+                          style: TextStyle(
+                            color: msg.isMe ? Colors.white70 : Colors.black54,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: InputDecoration(
+                      hintText: "Type a message...",
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide.none,
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                CircleAvatar(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  child: IconButton(
+                    icon: const Icon(Icons.send, color: Colors.white, size: 20),
+                    onPressed: _sendMessage,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+}
+
+class ChatConversation {
+  final String id;
+  final String customerName;
+  final String profileImage;
+  final String lastMessage;
+  final String lastMessageTime;
+  final bool isOnline;
+  final int unreadCount;
+
+  ChatConversation({
+    required this.id,
+    required this.customerName,
+    required this.profileImage,
+    required this.lastMessage,
+    required this.lastMessageTime,
+    required this.isOnline,
+    required this.unreadCount,
+  });
 }
 
 class Message {

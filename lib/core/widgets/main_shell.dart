@@ -7,7 +7,7 @@ import 'package:ceygo_app/core/providers/navigation_provider.dart';
 // import 'package:ceygo_app/features/home/presentation/screens/home_content.dart';
 import 'package:ceygo_app/features/booking/presentation/screens/history_content.dart';
 import 'package:ceygo_app/features/home/presentation/screens/favorites_content.dart';
-import 'package:ceygo_app/features/booking/presentation/screens/chat_content.dart';
+import 'package:ceygo_app/features/booking/presentation/screens/chat_screen.dart';
 import 'package:ceygo_app/features/profile/presentation/screens/profile_content.dart';
 
 class MainShell extends ConsumerStatefulWidget {
@@ -24,7 +24,7 @@ class _MainShellState extends ConsumerState<MainShell> {
     HomeContent(),
     HistoryContent(),
     FavoritesContent(),
-    ChatContent(),
+    ChatScreen(),
     ProfileContent(),
   ];
 

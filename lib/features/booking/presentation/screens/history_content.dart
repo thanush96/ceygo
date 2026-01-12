@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
 
 class HistoryContent extends StatelessWidget {
   const HistoryContent({super.key});
@@ -7,11 +8,8 @@ class HistoryContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const Text("Booking History"),
-        automaticallyImplyLeading: false,
-      ),
+      appBar: const CustomAppBar(title: "Booking History"),
+
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

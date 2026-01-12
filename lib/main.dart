@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:ceygo_app/core/theme/app_theme.dart';
 import 'package:ceygo_app/core/router/app_router.dart';
+import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() {
@@ -18,6 +19,9 @@ class MyApp extends ConsumerWidget {
       title: 'CeyGo',
       theme: AppTheme.lightTheme,
       routerConfig: appRouter,
+      builder: (context, child) {
+        return GradientBackground(child: child ?? const SizedBox.shrink());
+      },
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

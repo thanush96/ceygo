@@ -1,3 +1,4 @@
+import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 
 class FavoritesContent extends StatelessWidget {
@@ -7,11 +8,14 @@ class FavoritesContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: const Text("Favorites"),
-        automaticallyImplyLeading: false,
-      ),
+
+      // appBar: AppBar(
+      //   backgroundColor: Colors.transparent,
+      //   title: const Text("Favorites"),
+      //   automaticallyImplyLeading: false,
+      // ),
+      appBar: const CustomAppBar(title: "Favorites"),
+
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

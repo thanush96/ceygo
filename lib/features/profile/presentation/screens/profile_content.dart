@@ -1,3 +1,4 @@
+import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -11,11 +12,11 @@ class ProfileContent extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
 
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          title: const Text("Profile"),
-          automaticallyImplyLeading: false,
-        ),
+        // appBar: AppBar(
+        //   backgroundColor: Colors.transparent,
+        //   title: const Text("Profile"),
+        //   automaticallyImplyLeading: false,
+        appBar: const CustomAppBar(title: "Profile"),
 
         body: SafeArea(
           child: Column(

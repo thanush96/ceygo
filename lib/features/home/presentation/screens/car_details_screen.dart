@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/features/home/presentation/providers/home_providers.dart';
 import 'package:ceygo_app/core/widgets/photo_gallery.dart';
+import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
 
 // Constants
 class _AppColors {
@@ -12,8 +13,6 @@ class _AppColors {
 }
 
 class _Dimensions {
-  static const double appBarIconSize = 18.0;
-  static const double appBarButtonRadius = 18.0;
   static const double cardRadius = 20.0;
   static const double bottomButtonRadius = 40.0;
 }
@@ -70,61 +69,17 @@ class _CarDetailsContent extends StatelessWidget {
             ],
           ),
         ),
-        const _TopAppBar(),
+        CustomAppBar(
+          title: 'Car Detail',
+          useCustomStyle: true,
+          backgroundColor: _AppColors.gradientStart,
+          leftIcon: Icons.arrow_back,
+          onLeftPressed: () => context.pop(),
+          rightIcon: Icons.favorite_border,
+          onRightPressed: () {},
+        ),
         _BottomBookButton(car: car),
       ],
-    );
-  }
-}
-
-// Compact Top App Bar
-class _TopAppBar extends StatelessWidget {
-  const _TopAppBar();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: _AppColors.gradientStart,
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _AppBarButton(
-                icon: Icons.arrow_back,
-                onPressed: () => context.pop(),
-              ),
-              const Text('Car Detail', style: TextStyle(fontSize: 20)),
-              _AppBarButton(icon: Icons.favorite_border, onPressed: () {}),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AppBarButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onPressed;
-
-  const _AppBarButton({required this.icon, required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: CircleAvatar(
-        radius: _Dimensions.appBarButtonRadius,
-        backgroundColor: Colors.grey.shade100,
-        child: Icon(
-          icon,
-          color: Colors.black,
-          size: _Dimensions.appBarIconSize,
-        ),
-      ),
     );
   }
 }
@@ -237,15 +192,15 @@ class _DescriptionCard extends StatelessWidget {
               children: [
                 TextSpan(
                   text:
-                      'Experience pure performance with the ${car.brand} ${car.name} — a masterpiece built for thrill-seekers. Its 4.0-liter engine and ',
+                      'Experience pure performance with the ${car.brand} ${car.name} — a masterpiece built for thrill-seekers. Its 4.0-liter engine. ',
                 ),
-                TextSpan(
-                  text: 'See More...',
-                  style: TextStyle(
-                    color: Colors.blue.shade600,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                // TextSpan(
+                //   text: 'See More...',
+                //   style: TextStyle(
+                //     color: Colors.blue.shade600,
+                //     fontWeight: FontWeight.w600,
+                //   ),
+                // ),
               ],
             ),
           ),

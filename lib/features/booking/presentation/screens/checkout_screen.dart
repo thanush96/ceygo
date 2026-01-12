@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
+import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
 
 class CheckoutScreen extends StatefulWidget {
   final dynamic car;
@@ -57,34 +58,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         backgroundColor: Colors.transparent,
         body: Column(
           children: [
-            // Custom App Bar
-            SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => context.pop(),
-                      child: const Icon(Icons.chevron_left, size: 28),
-                    ),
-                    const Expanded(
-                      child: Text(
-                        'Checkout',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 20,
-                          // fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 28), // Balance the back button
-                  ],
-                ),
-              ),
+            CustomAppBar(
+              title: 'Checkout',
+              useCustomStyle: true,
+              leftIcon: Icons.chevron_left,
+              onLeftPressed: () => context.pop(),
             ),
 
             // Content
