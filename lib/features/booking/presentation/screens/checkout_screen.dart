@@ -283,12 +283,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ref.read(bookingHistoryProvider.notifier).addBooking(booking);
 
                 // Show success message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Booking Successful!"),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                // ScaffoldMessenger.of(context).showSnackBar(
+                //   const SnackBar(
+                //     content: Text("Booking Successful!"),
+                //     backgroundColor: Colors.green,
+                //   ),
+                // );
 
                 // Navigate to booking history
                 context.go('/history');
