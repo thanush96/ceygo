@@ -373,17 +373,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           elevation: 0,
           leading: Padding(
             padding: const EdgeInsets.only(left: 16),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: () => Navigator.pop(context),
-              ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
             ),
           ),
+
           title: Row(
             children: [
               CircleAvatar(

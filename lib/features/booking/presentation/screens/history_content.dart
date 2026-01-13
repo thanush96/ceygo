@@ -217,7 +217,7 @@ class _DateSelector extends StatelessWidget {
                       ? Theme.of(context).primaryColor
                       : isToday
                       ? Theme.of(context).primaryColor.withOpacity(0.1)
-                      : Colors.grey.shade100,
+                      : Colors.white,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
@@ -226,7 +226,7 @@ class _DateSelector extends StatelessWidget {
                 Text(
                   DateFormat('E').format(date).substring(0, 2),
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 16,
                     color: isSelected ? Colors.white : Colors.grey.shade600,
                     fontWeight: FontWeight.w500,
                   ),
@@ -267,9 +267,10 @@ class _CompactBookingCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
+      color: Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: Theme.of(context).primaryColorLight, width: 1),
+        // side: BorderSide(color: Theme.of(context).primaryColorLight, width: 1),
       ),
       elevation: 0,
       child: InkWell(
@@ -288,7 +289,7 @@ class _CompactBookingCard extends StatelessWidget {
                     width: 100,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Image.asset(
@@ -298,7 +299,7 @@ class _CompactBookingCard extends StatelessWidget {
                           (_, __, ___) => const Icon(
                             Icons.directions_car,
                             size: 40,
-                            color: Colors.grey,
+                            color: Colors.white,
                           ),
                     ),
                   ),
@@ -380,13 +381,13 @@ class _CompactBookingCard extends StatelessWidget {
               //   value: booking.paymentMethod,
               // ),
               // const SizedBox(height: 12),
-              const Divider(),
-              const SizedBox(height: 8),
+              // const Divider(),
+              const SizedBox(height: 16),
               // Total Price Section
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 7),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  color: _getStatusColor(booking.status).withOpacity(0.2),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Row(
@@ -416,7 +417,7 @@ class _CompactBookingCard extends StatelessWidget {
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor,
+                        color: _getStatusColor(booking.status),
                         borderRadius: BorderRadius.circular(25),
                       ),
                       child: Text(
