@@ -331,7 +331,7 @@ class _BottomBookButton extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.only(left: 10),
                 child: Text(
-                  'Rs.${car.pricePerDay.toStringAsFixed(0)}/day',
+                  'Rs ${car.pricePerDay.toStringAsFixed(0)}/day',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,

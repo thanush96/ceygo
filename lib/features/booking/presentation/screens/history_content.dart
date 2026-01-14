@@ -274,7 +274,7 @@ class _CompactBookingCard extends StatelessWidget {
       ),
       elevation: 0,
       child: InkWell(
-        onTap: () => context.push('/car-details/${car.id}'),
+        onTap: () => context.push('/booking-details', extra: booking),
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -304,6 +304,29 @@ class _CompactBookingCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
+
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      width: 50,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Image.asset(
+                        car.imageUrl,
+                        fit: BoxFit.contain,
+                        errorBuilder:
+                            (_, __, ___) => const Icon(
+                              Icons.directions_car,
+                              size: 40,
+                              color: Colors.white,
+                            ),
+                      ),
+                    ),
+                  ),
                   // Car Details
                   Expanded(
                     child: Column(
@@ -400,7 +423,7 @@ class _CompactBookingCard extends StatelessWidget {
                           children: [
                             TextSpan(
                               text:
-                                  "Rs.${booking.totalPrice.toStringAsFixed(0)}",
+                                  "Rs ${booking.totalPrice.toStringAsFixed(0)}",
                               style: const TextStyle(
                                 color: Color.fromARGB(255, 0, 0, 0),
                                 fontSize: 20,
@@ -581,7 +604,7 @@ class _BookingDetailsSheet extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Rs.${booking.totalPrice.toStringAsFixed(0)}',
+                  'Rs ${booking.totalPrice.toStringAsFixed(0)}',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

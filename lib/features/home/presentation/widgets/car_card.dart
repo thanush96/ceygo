@@ -222,7 +222,7 @@ class CarCard extends StatelessWidget {
                         text: TextSpan(
                           children: [
                             TextSpan(
-                              text: "\Rs.${car.pricePerDay.toStringAsFixed(0)}",
+                              text: "\Rs ${car.pricePerDay.toStringAsFixed(0)}",
                               style: TextStyle(
                                 color: const Color.fromARGB(255, 0, 0, 0),
                                 fontSize: 20,

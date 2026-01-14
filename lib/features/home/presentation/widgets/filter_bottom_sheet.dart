@@ -220,7 +220,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
                 // Rental / Hire Price Section
                 const Text(
-                  'Price (Rs.)',
+                  'Price (Rs )',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 12),
