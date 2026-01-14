@@ -37,6 +37,12 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    configurations.all {
+        resolutionStrategy {
+            force("androidx.activity:activity:1.9.3")
+        }
+    }
 }
 
 flutter {
