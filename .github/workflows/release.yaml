@@ -1,7 +1,57 @@
-name: Test run
+# name: Test run
+
+# on:
+#   push:
+#     branches: [main]
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - uses: actions/checkout@v4
+
+#       - name: Set up Flutter
+#         uses: subosito/flutter-action@v2
+#         with:
+#           channel: 'stable'
+
+#       - name: Install dependencies
+#         run: flutter pub get
+
+#       - name: Run tests
+#         run: flutter test
+
+
+
+
+###############################################
+# INSTRUCTIONS
+# This workflow will:
+# 1. Run on every push or pull request to main branch.
+# 2. Set up Flutter and JDK 17.
+# 3. Install dependencies and run tests.
+# 4. Build the Android App Bundle (AAB) for release.
+# 5. Upload the AAB as a workflow artifact for download.
+#
+# To deploy to Google Play, add a step to upload the AAB using a deploy action or script.
+# For secrets (like keystore), use GitHub Secrets and reference them in the workflow.
+#
+# For more info: https://docs.github.com/en/actions
+###############################################
+
+
+
+
+
+
+
+name: Flutter Android Release CI/CD
 
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
 
 jobs:
@@ -9,15 +59,52 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repo
       - uses: actions/checkout@v4
 
+      # 2️⃣ Set up Flutter with caching
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: stable
+          cache: true
 
+      # 3️⃣ Cache Pub packages for faster CI
+      - name: Cache Pub packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool/pub
+          key: ${{ runner.os }}-pub-${{ hashFiles('pubspec.yaml') }}
+
+      # 4️⃣ Install dependencies
       - name: Install dependencies
         run: flutter pub get
 
+      # 5️⃣ Run Flutter tests
       - name: Run tests
         run: flutter test
+
+      # 6️⃣ Set up JDK 17 for Android builds
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+          cache: gradle
+
+      # 7️⃣ Grant execute permissions to Gradle wrapper
+      - name: Grant execute permissions for Gradle
+        run: chmod +x android/gradlew
+
+      # 8️⃣ Build Android App Bundle (AAB)
+      - name: Build Android App Bundle (AAB)
+        run: flutter build appbundle --release
+
+      # 9️⃣ Upload AAB artifact
+      - name: Upload Android App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release.aab
+          path: build/app/outputs/bundle/release/app-release.aab
