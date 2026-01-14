@@ -8,6 +8,7 @@ import 'package:intl/intl.dart' as intl;
 import 'app_localizations_en.dart';
 import 'app_localizations_si.dart';
 import 'app_localizations_ta.dart';
+import 'package:ceygo_app/l10n/app_localizations.dart';
 
 // ignore_for_file: type=lint
 

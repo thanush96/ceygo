@@ -15,8 +15,7 @@ class AppLocalizationsSi extends AppLocalizations {
   String get onboardingTitle => 'உங்கள் கனவு காரைக் கண்டறியவும்';
 
   @override
-  String get onboardingSubtitle =>
-      'சிறந்த விலையில் சிறந்த கார்களை வாடகைக்கு எடுங்கள்.';
+  String get onboardingSubtitle => 'சிறந்த விலையில் சிறந்த கார்களை வாடகைக்கு எடுங்கள்.';
 
   @override
   String get login => 'உள்நுழைய';

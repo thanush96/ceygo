@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
+import 'package:ceygo_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +9,6 @@ import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/features/home/presentation/providers/home_providers.dart';
 import 'package:ceygo_app/features/home/presentation/widgets/car_card.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   final String? initialQuery;
