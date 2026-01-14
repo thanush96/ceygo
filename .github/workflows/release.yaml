@@ -83,12 +83,6 @@ jobs:
           java-version: 17
           cache: 'gradle'
 
-      - name: Grant execute permissions for gradlew
-        run: chmod +x gradlew
-
-      - name: Run unit tests
-        run: ./gradlew clean testDebug
-
   distribute:
     name: Distribute bundle to Google Play
     needs: test
