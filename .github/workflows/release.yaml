@@ -71,11 +71,19 @@ jobs:
           alias: ${{ secrets.ANDROID_KEY_ALIAS }}
           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
-      - name: Deploy to Google Play
-        uses: r0adkll/upload-google-play@v1
+      - name: List bundle directory
+        run: ls -l build/app/outputs/bundle/release
+
+      - name: Print environment
+        run: env
+
+      - name: Upload to Google Play
+        uses: r0adkll/upload-google-play@v1.1.4
         with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_AUTH_JSON }}
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: com.ceygo.app.ceygo_app
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
           track: production
           status: completed
+          inAppUpdatePriority: 0
+          changesNotSentForReview: false
