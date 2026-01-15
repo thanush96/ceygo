@@ -59,17 +59,25 @@ jobs:
           gradlePath: android/app/build.gradle.kts
           versionCode: ${{ github.run_number }}
 
+      - name: Create Keystore and Properties
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+          echo "storeFile=upload-keystore.jks" > android/key.properties
+          echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+
       - name: Build Android App Bundle (AAB)
         run: flutter build appbundle --release
 
-      - name: Sign Release
-        uses: r0adkll/sign-android-release@v1
-        with:
-          releaseDirectory: build/app/outputs/bundle/release
-          signingKeyBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          alias: ${{ secrets.ANDROID_KEY_ALIAS }}
-          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      # - name: Sign Release
+      #   uses: r0adkll/sign-android-release@v1
+      #   with:
+      #     releaseDirectory: build/app/outputs/bundle/release
+      #     signingKeyBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      #     keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      #     alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+      #     keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       # - name: List bundle directory
       #   run: ls -l build/app/outputs/bundle/release
