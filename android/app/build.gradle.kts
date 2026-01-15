@@ -42,10 +42,10 @@ android {
     signingConfigs {
         release {
             if (System.getenv("CI") != "true") {
-                storeFile = file("your_keystore.jks")
-                storePassword = "your_password"
-                keyAlias = "your_alias"
-                keyPassword = "your_key_password"
+                storeFile = file("release-key.jks")
+                storePassword = "ceygo1996"
+                keyAlias = "release"
+                keyPassword = "ceygo1996"
             }
         }
     }
