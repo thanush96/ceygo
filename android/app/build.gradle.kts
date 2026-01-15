@@ -33,23 +33,6 @@ android {
         versionName = flutter.versionName
     }
 
-    val keystoreProperties = Properties()
-    val keystorePropertiesFile = rootProject.file("key.properties")
-    if (keystorePropertiesFile.exists()) {
-        keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-    }
-
-    signingConfigs {
-        release {
-            if (System.getenv("CI") != "true") {
-                storeFile = file("release-key.jks")
-                storePassword = "ceygo1996"
-                keyAlias = "release"
-                keyPassword = "ceygo1996"
-            }
-        }
-    }
-
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
@@ -66,12 +49,3 @@ android {
 flutter {
     source = "../.."
 }
-
-// - name: Sign Release
-//         uses: r0adkll/sign-android-release@v1
-//         with:
-//           releaseDirectory: build/app/outputs/bundle/release
-//           signingKeyBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-//           keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-//           alias: ${{ secrets.ANDROID_KEY_ALIAS }}
-//           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
