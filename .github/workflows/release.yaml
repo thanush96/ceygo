@@ -74,8 +74,6 @@ jobs:
       - name: List bundle directory
         run: ls -l build/app/outputs/bundle/release
 
-      - name: Print environment
-        run: env
 
       - name: Upload to Google Play
         uses: r0adkll/upload-google-play@v1
