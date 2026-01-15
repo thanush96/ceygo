@@ -62,14 +62,14 @@ jobs:
       - name: Build Android App Bundle (AAB)
         run: flutter build appbundle --release
 
-      # - name: Sign Release
-      #   uses: r0adkll/sign-android-release@v1
-      #   with:
-      #     releaseDirectory: build/app/outputs/bundle/release
-      #     signingKeyBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-      #     keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-      #     alias: ${{ secrets.ANDROID_KEY_ALIAS }}
-      #     keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      - name: Sign Release
+        uses: r0adkll/sign-android-release@v1
+        with:
+          releaseDirectory: build/app/outputs/bundle/release
+          signingKeyBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+          keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       # - name: List bundle directory
       #   run: ls -l build/app/outputs/bundle/release

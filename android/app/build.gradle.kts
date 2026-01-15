@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -30,11 +33,26 @@ android {
         versionName = flutter.versionName
     }
 
+    val keystoreProperties = Properties()
+    val keystorePropertiesFile = rootProject.file("key.properties")
+    if (keystorePropertiesFile.exists()) {
+        keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+    }
+
+    signingConfigs {
+        release {
+            if (System.getenv("CI") != "true") {
+                storeFile = file("your_keystore.jks")
+                storePassword = "your_password"
+                keyAlias = "your_alias"
+                keyPassword = "your_key_password"
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -48,3 +66,12 @@ android {
 flutter {
     source = "../.."
 }
+
+// - name: Sign Release
+//         uses: r0adkll/sign-android-release@v1
+//         with:
+//           releaseDirectory: build/app/outputs/bundle/release
+//           signingKeyBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+//           keyStorePassword: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+//           alias: ${{ secrets.ANDROID_KEY_ALIAS }}
+//           keyPassword: ${{ secrets.ANDROID_KEY_PASSWORD }}
