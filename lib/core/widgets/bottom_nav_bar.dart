@@ -16,7 +16,7 @@ class BottomNavBar extends StatelessWidget {
 
     return SafeArea(
       child: Container(
-        margin: const EdgeInsets.only(left: 20, right: 20, bottom: 0),
+        margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.black,
