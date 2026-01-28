@@ -9,6 +9,8 @@ import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/features/home/presentation/providers/home_providers.dart';
 import 'package:ceygo_app/features/home/presentation/widgets/car_card.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
+import 'package:ceygo_app/core/network/services/vehicle_service.dart';
+import 'package:ceygo_app/core/widgets/error_dialog.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   final String? initialQuery;

@@ -1,12 +1,27 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ceygo_app/features/home/domain/models/car.dart';
-import 'package:ceygo_app/features/home/data/mock_car_repository.dart';
+import 'package:ceygo_app/features/home/data/vehicle_repository.dart';
+import 'package:ceygo_app/core/network/services/vehicle_service.dart' show VehicleSearchParams;
 
-final carRepositoryProvider = Provider((ref) => MockCarRepository());
+final carRepositoryProvider = Provider<VehicleRepository>((ref) {
+  return ApiVehicleRepository();
+});
 
 final carListProvider = FutureProvider<List<Car>>((ref) async {
   final repository = ref.watch(carRepositoryProvider);
   return repository.getCars();
+});
+
+// Search vehicles provider
+final searchVehiclesProvider = FutureProvider.family<List<Car>, VehicleSearchParams>((ref, params) async {
+  final repository = ref.watch(carRepositoryProvider);
+  return repository.searchVehicles(params);
+});
+
+// Vehicle details provider
+final vehicleDetailsProvider = FutureProvider.family<Car, String>((ref, id) async {
+  final repository = ref.watch(carRepositoryProvider);
+  return repository.getVehicleDetails(id);
 });
 
 // Favorites provider

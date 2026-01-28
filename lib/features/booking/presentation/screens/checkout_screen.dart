@@ -6,6 +6,12 @@ import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
 import 'package:ceygo_app/features/booking/domain/models/booking.dart';
 import 'package:ceygo_app/features/booking/presentation/providers/booking_providers.dart';
 import 'package:ceygo_app/core/providers/navigation_provider.dart';
+import 'package:ceygo_app/core/network/services/booking_service.dart';
+import 'package:ceygo_app/core/widgets/loading_overlay.dart';
+import 'package:ceygo_app/core/widgets/error_dialog.dart';
+
+// Import CreateBookingRequest
+import 'package:ceygo_app/core/network/services/booking_service.dart' show CreateBookingRequest;
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   final dynamic car;
@@ -246,7 +252,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           child: SafeArea(
             top: false,
             child: ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 if (_startDate == null || _endDate == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -256,46 +262,45 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   return;
                 }
 
-                // Calculate total price
-                final days = _endDate!.difference(_startDate!).inDays;
-                final totalPrice = widget.car.pricePerDay * days;
+                try {
+                  // Create booking request
+                  final bookingRequest = CreateBookingRequest(
+                    vehicleId: widget.car.id,
+                    startDate: _startDate!.toIso8601String(),
+                    endDate: _endDate!.toIso8601String(),
+                    pickupTime: _pickupTime != null 
+                        ? _pickupTime!.format(context) 
+                        : null,
+                    pickupLocation: _pickupOption == 0
+                        ? 'Pickup from the dealership'
+                        : 'Deliver to my location',
+                    dropoffLocation: null,
+                    notes: null,
+                  );
 
-                // Create booking
-                final booking = Booking(
-                  id: DateTime.now().millisecondsSinceEpoch.toString(),
-                  car: widget.car,
-                  startDate: _startDate!,
-                  endDate: _endDate!,
-                  pickupTime:
-                      _pickupTime != null
-                          ? _pickupTime!.format(context)
-                          : 'Not set',
-                  pickupLocation:
-                      _pickupOption == 0
-                          ? 'Pickup from the dealership'
-                          : 'Deliver to my location',
-                  paymentMethod: 'Visa ending in 1111',
-                  totalPrice: totalPrice,
-                  bookingDate: DateTime.now(),
-                );
+                  // Create booking via API
+                  final bookingAsync = ref.read(createBookingProvider(bookingRequest));
+                  final booking = await bookingAsync.future;
 
-                // Add to booking history
-                ref.read(bookingHistoryProvider.notifier).addBooking(booking);
-
-                // Show success message
-                // ScaffoldMessenger.of(context).showSnackBar(
-                //   const SnackBar(
-                //     content: Text("Booking Successful!"),
-                //     backgroundColor: Colors.green,
-                //   ),
-                // );
-
-                // Navigate to booking history
-                context.go('/history');
-                // Set tab to history (index 1) after navigation
-                Future.microtask(
-                  () => ref.read(currentTabIndexProvider.notifier).setIndex(1),
-                );
+                  if (mounted) {
+                    // Navigate to payment method selection
+                    context.push('/payment-method', extra: {
+                      'bookingId': booking.id,
+                      'amount': booking.totalPrice,
+                    });
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    showErrorDialog(
+                      context,
+                      title: 'Booking Failed',
+                      message: e.toString().replaceAll('Exception: ', ''),
+                      onRetry: () {
+                        // Retry logic can be added here
+                      },
+                    );
+                  }
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2563EB),

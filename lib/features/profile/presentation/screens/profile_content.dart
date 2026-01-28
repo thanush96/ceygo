@@ -1,13 +1,58 @@
 import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ceygo_app/core/providers/auth_provider.dart';
+import 'package:ceygo_app/core/network/services/user_service.dart';
+import 'package:ceygo_app/core/widgets/error_dialog.dart';
 
-class ProfileContent extends StatelessWidget {
+class ProfileContent extends ConsumerStatefulWidget {
   const ProfileContent({super.key});
 
   @override
+  ConsumerState<ProfileContent> createState() => _ProfileContentState();
+}
+
+class _ProfileContentState extends ConsumerState<ProfileContent> {
+  final UserService _userService = UserService();
+  bool _isLoadingWallet = false;
+  double? _walletBalance;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWallet();
+  }
+
+  Future<void> _loadWallet() async {
+    try {
+      setState(() {
+        _isLoadingWallet = true;
+      });
+      final response = await _userService.getWallet();
+      final wallet = response.data as Map<String, dynamic>;
+      setState(() {
+        _walletBalance = (wallet['balance'] as num).toDouble();
+        _isLoadingWallet = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingWallet = false;
+      });
+    }
+  }
+
+  Future<void> _logout() async {
+    await ref.read(authProvider.notifier).logout();
+    if (mounted) {
+      context.go('/login');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final user = ref.watch(currentUserProvider);
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -105,18 +150,18 @@ class ProfileContent extends StatelessWidget {
                             ),
                             const SizedBox(height: 20),
                             // Name
-                            const Text(
-                              'Albert Warren',
-                              style: TextStyle(
+                            Text(
+                              user?.fullName ?? 'User',
+                              style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black,
                               ),
                             ),
                             const SizedBox(height: 4),
-                            // Email
+                            // Email/Phone
                             Text(
-                              'albertwarren@example.com',
+                              user?.email ?? user?.phone ?? '',
                               style: TextStyle(
                                 fontSize: 15,
                                 color: Colors.grey.shade600,
@@ -150,6 +195,19 @@ class ProfileContent extends StatelessWidget {
                             ),
                             _Divider(),
                             _ProfileMenuItem(
+                              icon: Icons.account_balance_wallet,
+                              title: 'Wallet',
+                              subtitle: _isLoadingWallet
+                                  ? 'Loading...'
+                                  : _walletBalance != null
+                                      ? 'Rs. ${_walletBalance!.toStringAsFixed(2)}'
+                                      : null,
+                              onTap: () {
+                                // Navigate to wallet screen if needed
+                              },
+                            ),
+                            _Divider(),
+                            _ProfileMenuItem(
                               icon: Icons.payment_outlined,
                               title: 'Payment Methods',
                               onTap: () {},
@@ -158,7 +216,9 @@ class ProfileContent extends StatelessWidget {
                             _ProfileMenuItem(
                               icon: Icons.calendar_today_outlined,
                               title: 'My Booking',
-                              onTap: () {},
+                              onTap: () {
+                                context.go('/history');
+                              },
                             ),
                             _Divider(),
                             _ProfileMenuItem(
@@ -171,6 +231,12 @@ class ProfileContent extends StatelessWidget {
                               icon: Icons.notifications_outlined,
                               title: 'Notification',
                               onTap: () {},
+                            ),
+                            _Divider(),
+                            _ProfileMenuItem(
+                              icon: Icons.logout,
+                              title: 'Logout',
+                              onTap: _logout,
                             ),
                           ],
                         ),
@@ -243,13 +309,28 @@ class _ProfileMenuItem extends StatelessWidget {
               const SizedBox(width: 16),
               // Title
               Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               // Arrow

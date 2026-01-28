@@ -189,8 +189,13 @@ class _HomeContentState extends ConsumerState<HomeContent> {
             const SizedBox(width: 16),
           ],
         ),
-        body: CustomScrollView(
-          slivers: [
+        body: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(carListProvider);
+            await ref.read(carListProvider.future);
+          },
+          child: CustomScrollView(
+            slivers: [
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(24.0),
@@ -479,10 +484,35 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                   ),
                 );
               },
-              error:
-                  (err, stack) => SliverToBoxAdapter(
-                    child: Center(child: Text('Error: $err')),
+              error: (err, stack) => SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Failed to load vehicles',
+                        style: theme.textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        err.toString(),
+                        style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          ref.invalidate(carListProvider);
+                        },
+                        child: const Text('Retry'),
+                      ),
+                    ],
                   ),
+                ),
+              ),
               loading:
                   () => const SliverToBoxAdapter(
                     child: Center(child: CircularProgressIndicator()),
@@ -491,6 +521,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
 
             const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
           ],
+          ),
         ),
       ),
     );

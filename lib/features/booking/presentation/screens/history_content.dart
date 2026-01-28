@@ -33,75 +33,67 @@ class HistoryContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allBookings = ref.watch(bookingHistoryProvider);
+    final bookingsAsync = ref.watch(bookingHistoryProvider);
     final selectedDate = ref.watch(selectedDateProvider);
     final selectedMonthYear = ref.watch(selectedMonthYearProvider);
 
-    // Filter bookings by selected date if any
-    final bookings =
-        selectedDate == null
-            ? allBookings
-            : allBookings.where((booking) {
-              return booking.startDate.year == selectedDate.year &&
-                  booking.startDate.month == selectedDate.month &&
-                  booking.startDate.day == selectedDate.day;
-            }).toList();
+    return bookingsAsync.when(
+      data: (allBookings) {
+        // Filter bookings by selected date if any
+        final bookings =
+            selectedDate == null
+                ? allBookings
+                : allBookings.where((booking) {
+                  return booking.startDate.year == selectedDate.year &&
+                      booking.startDate.month == selectedDate.month &&
+                      booking.startDate.day == selectedDate.day;
+                }).toList();
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: const CustomAppBar(title: "Booking History"),
-      body: Column(
-        children: [
-          // Month/Year Header with Edit button
-          Container(
-            color: Colors.transparent,
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: const CustomAppBar(title: "Booking History"),
+          body: RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(bookingHistoryProvider);
+              await ref.read(bookingHistoryProvider.future);
+            },
+            child: Column(
               children: [
-                Text(
-                  DateFormat('MMM yyyy').format(selectedMonthYear),
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                // Month/Year Header with Edit button
+                Container(
+                  color: Colors.transparent,
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        DateFormat('MMM yyyy').format(selectedMonthYear),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                // TextButton(
-                //   onPressed: () => _showMonthYearPicker(context, ref),
-                //   style: TextButton.styleFrom(
-                //     backgroundColor: Theme.of(context).primaryColor,
-                //     foregroundColor: Colors.white,
-                //     padding: const EdgeInsets.symmetric(
-                //       horizontal: 20,
-                //       vertical: 8,
-                //     ),
-                //     shape: RoundedRectangleBorder(
-                //       borderRadius: BorderRadius.circular(20),
-                //     ),
-                //   ),
-                //   child: const Text('Edit'),
-                // ),
-              ],
-            ),
-          ),
 
-          // Horizontal Date Selector
-          Container(
-            color: Colors.transparent,
-            height: 100,
-            child: _DateSelector(
-              selectedMonthYear: selectedMonthYear,
-              selectedDate: selectedDate,
-              onDateSelected: (date) {
-                ref.read(selectedDateProvider.notifier).setDate(date);
-              },
-            ),
-          ),
+                // Horizontal Date Selector
+                Container(
+                  color: Colors.transparent,
+                  height: 100,
+                  child: _DateSelector(
+                    selectedMonthYear: selectedMonthYear,
+                    selectedDate: selectedDate,
+                    onDateSelected: (date) {
+                      ref.read(selectedDateProvider.notifier).setDate(date);
+                    },
+                  ),
+                ),
 
-          const SizedBox(height: 8),
+                const SizedBox(height: 8),
 
-          // Bookings List Header
-          if (allBookings.isNotEmpty)
+                // Bookings List Header
+                if (allBookings.isNotEmpty)
             // Padding(
             //   padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
             //   child: Row(
@@ -614,8 +606,38 @@ class _BookingDetailsSheet extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 8),
-        ],
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        ),
+      );
+      },
+      loading: () => Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: const CustomAppBar(title: "Booking History"),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (err, stack) => Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: const CustomAppBar(title: "Booking History"),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+              const SizedBox(height: 16),
+              const Text('Failed to load bookings'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  ref.invalidate(bookingHistoryProvider);
+                },
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

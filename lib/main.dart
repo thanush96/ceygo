@@ -15,10 +15,12 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+    
     return MaterialApp.router(
       title: 'CeyGo',
       theme: AppTheme.lightTheme,
-      routerConfig: appRouter,
+      routerConfig: router,
       builder: (context, child) {
         return GradientBackground(child: child ?? const SizedBox.shrink());
       },

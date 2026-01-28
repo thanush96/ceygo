@@ -24,7 +24,7 @@ class CarDetailsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final carsAsync = ref.watch(carListProvider);
+    final vehicleAsync = ref.watch(vehicleDetailsProvider(carId));
 
     return Scaffold(
       body: Container(
@@ -35,16 +35,26 @@ class CarDetailsScreen extends ConsumerWidget {
             colors: [_AppColors.gradientStart, _AppColors.gradientEnd],
           ),
         ),
-        child: carsAsync.when(
-          data: (cars) {
-            final car = cars.firstWhere(
-              (c) => c.id == carId,
-              orElse: () => cars.first,
-            );
-            return _CarDetailsContent(car: car);
-          },
+        child: vehicleAsync.when(
+          data: (car) => _CarDetailsContent(car: car),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, _) => const Center(child: Text("Error loading details")),
+          error: (err, _) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, size: 64, color: Colors.grey),
+                const SizedBox(height: 16),
+                Text('Error loading vehicle details'),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    ref.invalidate(vehicleDetailsProvider(carId));
+                  },
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

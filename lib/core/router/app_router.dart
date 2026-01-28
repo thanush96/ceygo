@@ -8,12 +8,41 @@ import 'package:ceygo_app/features/home/presentation/screens/car_details_screen.
 import 'package:ceygo_app/features/home/presentation/screens/search_screen.dart';
 import 'package:ceygo_app/features/booking/presentation/screens/checkout_screen.dart';
 import 'package:ceygo_app/features/booking/presentation/screens/booking_details_screen.dart';
+import 'package:ceygo_app/features/booking/presentation/screens/payment_method_screen.dart';
+import 'package:ceygo_app/features/booking/presentation/screens/bnpl_selection_screen.dart';
+import 'package:ceygo_app/features/booking/presentation/screens/emi_selection_screen.dart';
+import 'package:ceygo_app/features/booking/presentation/screens/card_payment_screen.dart';
+import 'package:ceygo_app/features/booking/presentation/screens/process_payment_screen.dart';
 import 'package:ceygo_app/features/booking/domain/models/booking.dart';
 import 'package:ceygo_app/core/widgets/main_shell.dart';
+import 'package:ceygo_app/core/providers/auth_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final appRouter = GoRouter(
-  initialLocation: '/',
-  routes: [
+final appRouterProvider = Provider<GoRouter>((ref) {
+  final isAuthenticated = ref.watch(isAuthenticatedProvider);
+
+  return GoRouter(
+    initialLocation: '/',
+    redirect: (context, state) {
+      final isLoggedIn = isAuthenticated;
+      final isGoingToLogin = state.matchedLocation == '/login' ||
+          state.matchedLocation == '/signup' ||
+          state.matchedLocation == '/otp' ||
+          state.matchedLocation == '/';
+
+      // If not logged in and trying to access protected route
+      if (!isLoggedIn && !isGoingToLogin) {
+        return '/login';
+      }
+
+      // If logged in and trying to access auth pages
+      if (isLoggedIn && isGoingToLogin && state.matchedLocation != '/') {
+        return '/home';
+      }
+
+      return null;
+    },
+    routes: [
     GoRoute(path: '/', builder: (context, state) => const OnboardingScreen()),
     // GoRoute(path: '/', builder: (context, state) => const OnboardingScreen()),
     GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
@@ -69,9 +98,72 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/booking-details',
       builder: (context, state) {
-        final booking = state.extra as Booking;
-        return BookingDetailsScreen(booking: booking);
+        final extra = state.extra;
+        if (extra is Booking) {
+          return BookingDetailsScreen(booking: extra);
+        } else if (extra is Map<String, dynamic> && extra['id'] != null) {
+          // Fetch booking by ID - for now return placeholder
+          // In production, you'd fetch it here
+          return const Scaffold(
+            body: Center(child: Text('Booking not found')),
+          );
+        }
+        return const Scaffold(
+          body: Center(child: Text('Invalid booking')),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/payment-method',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        return PaymentMethodScreen(
+          bookingId: extra['bookingId'] as String,
+          amount: (extra['amount'] as num).toDouble(),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/bnpl-selection',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        return BnplSelectionScreen(
+          bookingId: extra['bookingId'] as String,
+          amount: (extra['amount'] as num).toDouble(),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/emi-selection',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        return EmiSelectionScreen(
+          bookingId: extra['bookingId'] as String,
+          amount: (extra['amount'] as num).toDouble(),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/card-payment',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        return CardPaymentScreen(
+          bookingId: extra['bookingId'] as String,
+          amount: (extra['amount'] as num).toDouble(),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/process-payment',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        return ProcessPaymentScreen(
+          bookingId: extra['bookingId'] as String,
+          method: extra['method'] as String,
+          amount: (extra['amount'] as num).toDouble(),
+        );
       },
     ),
   ],
-);
+  );
+});

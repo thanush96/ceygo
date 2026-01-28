@@ -1,44 +1,58 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ceygo_app/features/booking/domain/models/booking.dart';
+import 'package:ceygo_app/features/booking/data/booking_repository.dart';
+import 'package:ceygo_app/core/network/services/booking_service.dart';
 
-// Booking History provider
-class BookingHistoryNotifier extends Notifier<List<Booking>> {
+final bookingRepositoryProvider = Provider<BookingRepository>((ref) {
+  return ApiBookingRepository();
+});
+
+// Booking History provider - fetches from API
+class BookingHistoryNotifier extends Notifier<AsyncValue<List<Booking>>> {
   @override
-  List<Booking> build() {
-    return [];
+  Future<List<Booking>> build() async {
+    final repository = ref.read(bookingRepositoryProvider);
+    return repository.getBookings();
   }
 
-  void addBooking(Booking booking) {
-    state = [...state, booking];
+  Future<void> refresh() async {
+    state = const AsyncValue.loading();
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(bookingRepositoryProvider);
+      return repository.getBookings();
+    });
   }
 
-  void removeBooking(String bookingId) {
-    state = state.where((b) => b.id != bookingId).toList();
+  Future<void> addBooking(Booking booking) async {
+    // Optimistically add to list
+    final currentBookings = state.value ?? [];
+    state = AsyncValue.data([booking, ...currentBookings]);
   }
 
-  void updateBookingStatus(String bookingId, String status) {
-    state = [
-      for (final booking in state)
-        if (booking.id == bookingId)
-          Booking(
-            id: booking.id,
-            car: booking.car,
-            startDate: booking.startDate,
-            endDate: booking.endDate,
-            pickupTime: booking.pickupTime,
-            pickupLocation: booking.pickupLocation,
-            paymentMethod: booking.paymentMethod,
-            totalPrice: booking.totalPrice,
-            bookingDate: booking.bookingDate,
-            status: status,
-          )
-        else
-          booking,
-    ];
+  Future<void> removeBooking(String bookingId) async {
+    final repository = ref.read(bookingRepositoryProvider);
+    await repository.cancelBooking(bookingId);
+    await refresh();
+  }
+
+  Future<void> updateBookingStatus(String bookingId, String status) async {
+    await refresh();
   }
 }
 
 final bookingHistoryProvider =
-    NotifierProvider<BookingHistoryNotifier, List<Booking>>(
+    NotifierProvider<BookingHistoryNotifier, AsyncValue<List<Booking>>>(
       () => BookingHistoryNotifier(),
     );
+
+// Create booking provider
+final createBookingProvider = FutureProvider.family<Booking, CreateBookingRequest>((ref, request) async {
+  final repository = ref.read(bookingRepositoryProvider);
+  return repository.createBooking(request);
+});
+
+// Cancel booking provider
+final cancelBookingProvider = FutureProvider.family<Booking, Map<String, String>>((ref, params) async {
+  final repository = ref.read(bookingRepositoryProvider);
+  return repository.cancelBooking(params['id']!, reason: params['reason']);
+});

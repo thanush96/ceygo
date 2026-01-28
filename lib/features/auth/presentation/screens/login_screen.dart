@@ -1,21 +1,23 @@
 import 'package:ceygo_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:ceygo_app/core/theme/app_theme.dart';
+import 'package:ceygo_app/core/providers/auth_provider.dart';
+import 'package:ceygo_app/core/widgets/error_dialog.dart';
+import 'package:ceygo_app/core/widgets/loading_overlay.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final _phoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _isPasswordVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                "Please login to your account",
+                                "Enter your phone number to receive OTP",
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: Colors.grey[600],
                                 ),
@@ -90,60 +92,41 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 30),
                               TextFormField(
-                                controller: _emailController,
+                                controller: _phoneController,
                                 decoration: InputDecoration(
-                                  labelText: l10n.email,
-                                  prefixIcon: const Icon(Icons.email_outlined),
+                                  labelText: 'Phone Number',
+                                  hintText: '+94771234567',
+                                  prefixIcon: const Icon(Icons.phone_outlined),
                                 ),
-                                keyboardType: TextInputType.emailAddress,
+                                keyboardType: TextInputType.phone,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Please enter your email';
+                                    return 'Please enter your phone number';
+                                  }
+                                  if (!value.startsWith('+')) {
+                                    return 'Phone number must start with +';
                                   }
                                   return null;
                                 },
-                              ),
-                              const SizedBox(height: 20),
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: !_isPasswordVisible,
-                                decoration: InputDecoration(
-                                  labelText: l10n.password,
-                                  prefixIcon: const Icon(Icons.lock_outline),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _isPasswordVisible
-                                          ? Icons.visibility
-                                          : Icons.visibility_off,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _isPasswordVisible =
-                                            !_isPasswordVisible;
-                                      });
-                                    },
-                                  ),
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your password';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: TextButton(
-                                  onPressed:
-                                      () => context.push('/forgot-password'),
-                                  child: Text(l10n.forgotPassword),
-                                ),
                               ),
                               const SizedBox(height: 24),
                               ElevatedButton(
-                                onPressed: () {
+                                onPressed: () async {
                                   if (_formKey.currentState!.validate()) {
-                                    context.go('/home');
+                                    try {
+                                      await ref.read(authProvider.notifier).sendOtp(_phoneController.text.trim());
+                                      if (mounted) {
+                                        context.push('/otp', extra: {'phone': _phoneController.text.trim()});
+                                      }
+                                    } catch (e) {
+                                      if (mounted) {
+                                        showErrorDialog(
+                                          context,
+                                          title: 'Error',
+                                          message: e.toString().replaceAll('Exception: ', ''),
+                                        );
+                                      }
+                                    }
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(

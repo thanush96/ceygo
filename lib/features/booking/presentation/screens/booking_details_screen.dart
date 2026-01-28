@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/features/booking/domain/models/booking.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
+import 'package:ceygo_app/features/booking/presentation/providers/booking_providers.dart';
+import 'package:ceygo_app/core/widgets/error_dialog.dart';
 import 'package:intl/intl.dart';
 
 class BookingDetailsScreen extends ConsumerWidget {
@@ -221,16 +223,62 @@ class BookingDetailsScreen extends ConsumerWidget {
                         width: double.infinity,
                         height: 54,
                         child: OutlinedButton(
-                          onPressed: () {
-                            // Navigator.of(context).pop();
-                            // // TODO: Implement cancel booking functionality
-                            // ScaffoldMessenger.of(context).showSnackBar(
-                            //   const SnackBar(
-                            //     content: Text('Booking cancelled successfully'),
-                            //     backgroundColor: Colors.red,
-                            //   ),
-                            // );
-                            // context.pop();
+                          onPressed: () async {
+                            // Show confirmation dialog
+                            final confirmed = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Cancel Booking'),
+                                content: const Text(
+                                  'Are you sure you want to cancel this booking?',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.of(context).pop(false),
+                                    child: const Text('No'),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () => Navigator.of(context).pop(true),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
+                                    ),
+                                    child: const Text('Yes, Cancel'),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirmed == true) {
+                              try {
+                                await ref.read(
+                                  cancelBookingProvider({
+                                    'id': booking.id,
+                                    'reason': 'Cancelled by user',
+                                  }),
+                                ).future;
+
+                                // Refresh booking history
+                                ref.invalidate(bookingHistoryProvider);
+
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Booking cancelled successfully'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                  context.pop();
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  showErrorDialog(
+                                    context,
+                                    title: 'Cancellation Failed',
+                                    message: e.toString().replaceAll('Exception: ', ''),
+                                  );
+                                }
+                              }
+                            }
                           },
                           style: OutlinedButton.styleFrom(
                             backgroundColor: Colors.red.shade50,

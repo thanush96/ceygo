@@ -1,26 +1,28 @@
 import 'package:ceygo_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
+import 'package:ceygo_app/core/providers/auth_provider.dart';
+import 'package:ceygo_app/core/widgets/error_dialog.dart';
+import 'package:ceygo_app/core/widgets/loading_overlay.dart';
 
-class SignupScreen extends StatefulWidget {
+class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
 
-  bool _isPasswordVisible = false;
   bool _agreedToTerms = false;
-  Set<String> _selectedRole = {'Rider'}; // Default role
+  String _selectedRole = 'Rider'; // Default role
 
   @override
   Widget build(BuildContext context) {
@@ -115,24 +117,20 @@ class _SignupScreenState extends State<SignupScreen> {
                                       context: context,
                                       label: l10n.rider,
                                       icon: Icons.person,
-                                      isSelected: _selectedRole.contains(
-                                        'Rider',
-                                      ),
+                                      isSelected: _selectedRole == 'Rider',
                                       onTap:
                                           () => setState(
-                                            () => _selectedRole = {'Rider'},
+                                            () => _selectedRole = 'Rider',
                                           ),
                                     ),
                                     _buildRoleSelector(
                                       context: context,
                                       label: l10n.provider,
                                       icon: Icons.drive_eta_outlined,
-                                      isSelected: _selectedRole.contains(
-                                        'Provider',
-                                      ),
+                                      isSelected: _selectedRole == 'Provider',
                                       onTap:
                                           () => setState(
-                                            () => _selectedRole = {'Provider'},
+                                            () => _selectedRole = 'Provider',
                                           ),
                                     ),
                                   ],
@@ -141,103 +139,58 @@ class _SignupScreenState extends State<SignupScreen> {
 
                               const SizedBox(height: 30),
                               TextFormField(
-                                controller: _nameController,
+                                controller: _firstNameController,
                                 decoration: const InputDecoration(
-                                  labelText: "Full Name",
+                                  labelText: "First Name",
                                   prefixIcon: Icon(Icons.person_outline),
                                 ),
                                 validator:
                                     (value) =>
                                         value!.isEmpty
-                                            ? 'Please enter your name'
+                                            ? 'Please enter your first name'
+                                            : null,
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _lastNameController,
+                                decoration: const InputDecoration(
+                                  labelText: "Last Name",
+                                  prefixIcon: Icon(Icons.person_outline),
+                                ),
+                                validator:
+                                    (value) =>
+                                        value!.isEmpty
+                                            ? 'Please enter your last name'
                                             : null,
                               ),
                               const SizedBox(height: 16),
                               TextFormField(
                                 controller: _emailController,
                                 decoration: const InputDecoration(
-                                  labelText: "Email",
+                                  labelText: "Email (Optional)",
                                   prefixIcon: Icon(Icons.email_outlined),
                                 ),
                                 keyboardType: TextInputType.emailAddress,
-                                validator:
-                                    (value) =>
-                                        value!.isEmpty
-                                            ? 'Please enter your email'
-                                            : null,
                               ),
                               const SizedBox(height: 16),
                               TextFormField(
                                 controller: _phoneController,
                                 decoration: const InputDecoration(
                                   labelText: "Phone Number",
+                                  hintText: "+94771234567",
                                   prefixIcon: Icon(Icons.phone_outlined),
                                 ),
                                 keyboardType: TextInputType.phone,
                                 validator:
-                                    (value) =>
-                                        value!.isEmpty
-                                            ? 'Please enter your phone number'
-                                            : null,
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: !_isPasswordVisible,
-                                decoration: InputDecoration(
-                                  labelText: "Password",
-                                  prefixIcon: const Icon(Icons.lock_outline),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _isPasswordVisible
-                                          ? Icons.visibility
-                                          : Icons.visibility_off,
-                                    ),
-                                    onPressed:
-                                        () => setState(
-                                          () =>
-                                              _isPasswordVisible =
-                                                  !_isPasswordVisible,
-                                        ),
-                                  ),
-                                ),
-                                validator:
-                                    (value) =>
-                                        value!.length < 6
-                                            ? 'Password must be at least 6 characters'
-                                            : null,
-                              ),
-
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _confirmPasswordController,
-                                obscureText: !_isPasswordVisible,
-                                decoration: InputDecoration(
-                                  labelText: "Confirm Password",
-                                  prefixIcon: const Icon(Icons.lock_outline),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _isPasswordVisible
-                                          ? Icons.visibility
-                                          : Icons.visibility_off,
-                                    ),
-                                    onPressed:
-                                        () => setState(
-                                          () =>
-                                              _isPasswordVisible =
-                                                  !_isPasswordVisible,
-                                        ),
-                                  ),
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please confirm your password';
-                                  }
-                                  if (value != _passwordController.text) {
-                                    return 'Passwords do not match';
-                                  }
-                                  return null;
-                                },
+                                    (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter your phone number';
+                                      }
+                                      if (!value.startsWith('+')) {
+                                        return 'Phone number must start with +';
+                                      }
+                                      return null;
+                                    },
                               ),
 
                               const SizedBox(height: 20),
@@ -279,7 +232,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
                               const SizedBox(height: 24),
                               ElevatedButton(
-                                onPressed: () {
+                                onPressed: () async {
                                   if (!_agreedToTerms) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
@@ -291,7 +244,32 @@ class _SignupScreenState extends State<SignupScreen> {
                                     return;
                                   }
                                   if (_formKey.currentState!.validate()) {
-                                    context.push('/otp');
+                                    try {
+                                      // Register user
+                                      await ref.read(authProvider.notifier).register(
+                                        phoneNumber: _phoneController.text.trim(),
+                                        firstName: _firstNameController.text.trim(),
+                                        lastName: _lastNameController.text.trim(),
+                                        email: _emailController.text.trim().isEmpty 
+                                            ? null 
+                                            : _emailController.text.trim(),
+                                      );
+                                      
+                                      // Send OTP
+                                      await ref.read(authProvider.notifier).sendOtp(_phoneController.text.trim());
+                                      
+                                      if (mounted) {
+                                        context.push('/otp', extra: {'phone': _phoneController.text.trim()});
+                                      }
+                                    } catch (e) {
+                                      if (mounted) {
+                                        showErrorDialog(
+                                          context,
+                                          title: 'Registration Failed',
+                                          message: e.toString().replaceAll('Exception: ', ''),
+                                        );
+                                      }
+                                    }
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(
@@ -339,6 +317,7 @@ class _SignupScreenState extends State<SignupScreen> {
             );
           },
         ),
+      ),
       ),
     );
   }
