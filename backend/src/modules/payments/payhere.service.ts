@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -60,5 +61,46 @@ export class PayHereService {
     url.searchParams.append('hash', hash);
 
     return url.toString();
+  }
+
+  async refundPayment(params: {
+    paymentId: string;
+    amount: number;
+    reason?: string;
+  }): Promise<boolean> {
+    const merchantId = this.configService.get<string>('PAYHERE_MERCHANT_ID');
+    const merchantSecret = this.configService.get<string>('PAYHERE_SECRET');
+    const isSandbox = this.configService.get<boolean>('PAYHERE_SANDBOX');
+
+    const hashedSecret = crypto
+      .createHash('md5')
+      .update(merchantSecret)
+      .digest('hex')
+      .toUpperCase();
+
+    const baseUrl = isSandbox
+      ? 'https://sandbox.payhere.lk/merchant/v1/payment/refund'
+      : 'https://www.payhere.lk/merchant/v1/payment/refund';
+
+    try {
+      const response = await axios.post(
+        baseUrl,
+        {
+          payment_id: params.paymentId,
+          amount: params.amount,
+          reason: params.reason || 'Customer cancellation',
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${hashedSecret}`, // PayHere typically uses a Different auth for Server-to-Server
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      return response.data?.status === 1;
+    } catch (error) {
+      console.error('PayHere Refund Error:', error.response?.data || error.message);
+      return false;
+    }
   }
 }

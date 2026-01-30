@@ -1,4 +1,5 @@
-import { IsDateString, IsNotEmpty, IsUUID, IsString } from 'class-validator';
+import { IsDateString, IsNotEmpty, IsUUID, IsString, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateBookingDto {
   @IsUUID()
@@ -20,4 +21,8 @@ export class CreateBookingDto {
   @IsString()
   @IsNotEmpty()
   dropoffLocation: string;
+
+  @IsString()
+  @IsOptional()
+  flightNumber?: string;
 }

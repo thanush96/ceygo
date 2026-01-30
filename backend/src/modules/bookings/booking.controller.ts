@@ -1,19 +1,49 @@
-import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Patch, UseGuards, Request } from '@nestjs/common';
 import { BookingService } from './booking.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
+import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
+import { RolesGuard } from '@modules/auth/guards/roles.guard';
+import { Roles } from '@common/decorators/roles.decorator';
 
 @Controller('bookings')
 export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
 
   @Post()
-  // Note: Assuming a JWT guard exists to populate req.user, but for now I'll use a mocked userId if not available
-  // or just take it from the body for testing if no auth is enforced yet.
-  // The user requested the service, I'll implement the controller to call it.
-  async create(@Body() createBookingDto: CreateBookingDto, @Request() req) {
-    // In a real app, userId would come from req.user.id
-    // For now, I'll use a placeholder or check if req.user exists
-    const userId = req.user?.id || 'placeholder-id'; 
-    return this.bookingService.createBooking(userId, createBookingDto);
+  @UseGuards(JwtAuthGuard)
+  create(@Request() req, @Body() createBookingDto: CreateBookingDto) {
+    return this.bookingService.createBooking(req.user.id, createBookingDto);
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  getUserBookings(@Request() req) {
+    return this.bookingService.getUserBookings(req.user.id);
+  }
+
+  @Get('owner')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('owner', 'admin')
+  getOwnerBookings(@Request() req) {
+    return this.bookingService.getOwnerBookings(req.user.id);
+  }
+
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  findOne(@Param('id') id: string, @Request() req) {
+    return this.bookingService.getBookingById(id, req.user.id);
+  }
+
+  @Patch(':id/cancel')
+  @UseGuards(JwtAuthGuard)
+  cancel(@Param('id') id: string, @Request() req) {
+    return this.bookingService.cancelBooking(id, req.user.id);
+  }
+
+  @Post(':id/confirm')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin') // Usually confirmed by webhook, but adding an endpoint for admin/test
+  confirm(@Param('id') id: string, @Body('gatewayRef') gatewayRef: string) {
+    return this.bookingService.confirmBooking(id, gatewayRef);
   }
 }
