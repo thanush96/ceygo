@@ -54,9 +54,21 @@ export class User {
   @IsOptional()
   profilePic?: string;
 
-  @Property()
+  @Property({ default: 'renter' })
   @IsEnum(['renter', 'owner', 'admin'])
   role: string = 'renter';
+
+  @Property({ default: 'pending' })
+  @IsEnum(['pending', 'approved', 'rejected'])
+  verificationStatus: string = 'pending';
+
+  @Property({ default: 'active' })
+  @IsEnum(['active', 'banned'])
+  status: string = 'active';
+
+  @Property({ nullable: true })
+  @IsString()
+  reason?: string;
 
   @OneToMany(() => Vehicle, (vehicle: Vehicle) => vehicle.owner)
   vehicles = new Collection<Vehicle>(this);

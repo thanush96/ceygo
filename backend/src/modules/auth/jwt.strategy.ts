@@ -20,8 +20,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: any) {
     const user = await this.em.findOne(User, { id: payload.sub });
-    if (!user) {
-      throw new UnauthorizedException();
+    if (!user || user.status === 'banned') {
+      throw new UnauthorizedException(user?.status === 'banned' ? 'Your account has been banned' : 'User not found');
     }
     return user;
   }

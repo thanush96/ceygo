@@ -73,6 +73,18 @@ export class Vehicle {
   @IsEnum(['available', 'rented', 'maintenance'])
   status: string = 'available';
 
+  @Property({ default: 'pending' })
+  @IsEnum(['pending', 'approved', 'rejected'])
+  verificationStatus: string = 'pending';
+
+  @Property({ default: false })
+  @IsBoolean()
+  isBlacklisted: boolean = false;
+
+  @Property({ nullable: true })
+  @IsString()
+  reason?: string;
+
   @Property({ type: 'text', nullable: true })
   @IsString()
   location: string;
