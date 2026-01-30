@@ -5,6 +5,11 @@ import { Booking } from '@modules/bookings/entities/booking.entity';
 import { User } from '@modules/users/entities/user.entity';
 
 @Entity({ tableName: 'vehicles' })
+@Index({ properties: ['status', 'pricePerDay'] })
+@Index({ properties: ['owner'] })
+// Note: MikroORM PostGIS support for spatial indexes usually requires custom DDL or specific types, 
+// using generic Index for lat/lng for now as separate fields, or composite if used together often.
+@Index({ properties: ['lat', 'lng'] }) 
 export class Vehicle {
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();

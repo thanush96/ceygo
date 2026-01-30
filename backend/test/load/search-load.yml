@@ -1,0 +1,21 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 50
+      name: "Warm up and ramp up"
+    - duration: 120
+      arrivalRate: 50
+      name: "Sustained high load"
+  defaults:
+    headers:
+      Content-Type: "application/json"
+scenarios:
+  - name: "Vehicle Search Flow"
+    flow:
+      - get:
+          url: "/api/vehicles?location=Colombo&start=2026-02-01&end=2026-02-05"
+      - think: 1
+      - get:
+          url: "/api/vehicles?fuelType=Hybrid"

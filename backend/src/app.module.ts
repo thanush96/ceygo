@@ -16,6 +16,7 @@ import { SmartCacheInterceptor } from './common/interceptors/smart-cache.interce
 import { CacheModule } from '@nestjs/cache-manager';
 import { HealthController } from './health.controller';
 import { AuditService } from './common/services/audit.service';
+import { QueuesModule } from './common/queues/queues.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { AuditService } from './common/services/audit.service';
             ssl: configService.get<string>('DB_SSL') === 'true' ? { rejectUnauthorized: false } : false,
           },
         },
+        pool: { min: 2, max: 20 },
       }),
     }),
 
@@ -73,6 +75,7 @@ import { AuditService } from './common/services/audit.service';
     PaymentsModule,
     ChatModule,
     AdminModule,
+    QueuesModule,
   ],
   providers: [
     {

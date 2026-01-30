@@ -6,6 +6,8 @@ import { Vehicle } from '@modules/vehicles/entities/vehicle.entity';
 import { Payment } from '@modules/payments/entities/payment.entity';
 
 @Entity({ tableName: 'bookings' })
+@Index({ properties: ['renter'] })
+@Index({ properties: ['vehicle', 'startDate', 'endDate'] })
 export class Booking {
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
