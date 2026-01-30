@@ -44,9 +44,9 @@ export class PayHereService {
 
     const url = new URL(baseUrl);
     url.searchParams.append('merchant_id', merchantId);
-    url.searchParams.append('return_url', 'http://sample.com/return'); // These should be from config ideally
-    url.searchParams.append('cancel_url', 'http://sample.com/cancel');
-    url.searchParams.append('notify_url', 'http://sample.com/notify');
+    url.searchParams.append('return_url', this.configService.get('PAYHERE_RETURN_URL') || 'http://localhost:3000/payment/success');
+    url.searchParams.append('cancel_url', this.configService.get('PAYHERE_CANCEL_URL') || 'http://localhost:3000/payment/cancel');
+    url.searchParams.append('notify_url', this.configService.get('PAYHERE_NOTIFY_URL') || 'http://localhost:3000/api/v1/payments/notify');
     url.searchParams.append('order_id', params.orderId);
     url.searchParams.append('items', params.items);
     url.searchParams.append('currency', params.currency);
@@ -61,6 +61,40 @@ export class PayHereService {
     url.searchParams.append('hash', hash);
 
     return url.toString();
+  }
+
+  verifySignature(notifyDto: any): boolean {
+    const merchantId = this.configService.get<string>('PAYHERE_MERCHANT_ID');
+    const merchantSecret = this.configService.get<string>('PAYHERE_SECRET');
+    
+    const { order_id, payment_id, payhere_amount, payhere_currency, status_code, md5sig } = notifyDto;
+
+    const hashedSecret = crypto
+      .createHash('md5')
+      .update(merchantSecret)
+      .digest('hex')
+      .toUpperCase();
+
+    const expectedSig = crypto
+      .createHash('md5')
+      .update(merchantId + order_id + payhere_amount + payhere_currency + status_code + hashedSecret)
+      .digest('hex')
+      .toUpperCase();
+
+    return expectedSig === md5sig;
+  }
+
+  async getPaymentStatus(orderId: string): Promise<any> {
+    const isSandbox = this.configService.get<boolean>('PAYHERE_SANDBOX');
+    const merchantId = this.configService.get<string>('PAYHERE_MERCHANT_ID');
+    const merchantSecret = this.configService.get<string>('PAYHERE_SECRET');
+
+    // For manual verification, PayHere requires an OAuth token
+    // This is a simplified version assuming a direct status check if available, 
+    // but usually, it requires fetching an access token first.
+    // For now, we'll implement a basic structure or log the need for full OAuth.
+    console.log(`Manual verification requested for order: ${orderId}`);
+    return { status: 'check_portal', orderId };
   }
 
   async refundPayment(params: {
