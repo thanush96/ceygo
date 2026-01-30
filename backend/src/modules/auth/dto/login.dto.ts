@@ -1,6 +1,12 @@
 import { IsNotEmpty, IsString, Matches } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class LoginDto {
+  @ApiProperty({
+    description: 'Sri Lankan phone number',
+    example: '+94771234567',
+    pattern: '^\\+94[0-9]{9}$'
+  })
   @IsString()
   @IsNotEmpty()
   @Matches(/^(?:\+94|0)7[0-9]{8}$/, {

@@ -9,6 +9,7 @@ import { AuthController } from './auth.controller';
 import { OtpService } from './otp.service';
 import { JwtStrategy } from './jwt.strategy';
 import { GoogleStrategy } from './google.strategy';
+import { CommonModule } from '@common/common.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { GoogleStrategy } from './google.strategy';
       }),
     }),
     MikroOrmModule.forFeature([User]),
+    CommonModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, OtpService, JwtStrategy, GoogleStrategy],

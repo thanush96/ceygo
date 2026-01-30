@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import helmet from 'helmet';
 import * as compression from 'compression';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -34,6 +35,16 @@ async function bootstrap() {
     origin: corsOrigin ? corsOrigin.split(',') : false,
     credentials: true,
   });
+
+  // Swagger Documentation
+  const config = new DocumentBuilder()
+    .setTitle('CeyGo API')
+    .setDescription('The CeyGo Car Rental API description')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
 
   const port = configService.get<number>('PORT') || 3000;
   await app.listen(port);

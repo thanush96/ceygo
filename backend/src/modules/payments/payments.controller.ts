@@ -1,8 +1,10 @@
 import { Controller, Post, Get, Body, Param, UseGuards, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { PayHereService } from './payhere.service';
 import { BookingService } from '@modules/bookings/booking.service';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 
+@ApiTags('Payments')
 @Controller('payments')
 export class PaymentsController {
   private readonly logger = new Logger(PaymentsController.name);
@@ -13,6 +15,10 @@ export class PaymentsController {
   ) {}
 
   @Post('notify')
+  @ApiOperation({ summary: 'Handle PayHere notification webhook' })
+  @ApiResponse({ status: 200, description: 'Notification processed' })
+  @ApiResponse({ status: 400, description: 'Invalid signature' })
+  @ApiBody({ schema: { type: 'object', example: { order_id: '123', payment_id: '456', status_code: '2' } } })
   async handlePayHereNotify(@Body() notifyDto: any) {
     this.logger.log(`Received PayHere notification for order: ${notifyDto.order_id}`);
 
@@ -38,6 +44,9 @@ export class PaymentsController {
 
   @Get(':bookingId/status')
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Check payment status for a booking' })
+  @ApiResponse({ status: 200, description: 'Payment status returned' })
   async getPaymentStatus(@Param('bookingId') bookingId: string) {
     return this.payHereService.getPaymentStatus(bookingId);
   }

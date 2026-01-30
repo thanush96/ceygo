@@ -15,8 +15,8 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { SmartCacheInterceptor } from './common/interceptors/smart-cache.interceptor';
 import { CacheModule } from '@nestjs/cache-manager';
 import { HealthController } from './health.controller';
-import { AuditService } from './common/services/audit.service';
 import { QueuesModule } from './common/queues/queues.module';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -24,6 +24,11 @@ import { QueuesModule } from './common/queues/queues.module';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+    }),
+
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 60 * 1000, // 1 minute default
     }),
 
     MikroOrmModule.forRootAsync({
@@ -76,6 +81,7 @@ import { QueuesModule } from './common/queues/queues.module';
     ChatModule,
     AdminModule,
     QueuesModule,
+    CommonModule,
   ],
   providers: [
     {
@@ -86,7 +92,6 @@ import { QueuesModule } from './common/queues/queues.module';
       provide: APP_INTERCEPTOR,
       useClass: SmartCacheInterceptor,
     },
-    AuditService,
   ],
   controllers: [HealthController],
 })
