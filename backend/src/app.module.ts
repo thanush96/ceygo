@@ -14,6 +14,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { SmartCacheInterceptor } from './common/interceptors/smart-cache.interceptor';
 import { CacheModule } from '@nestjs/cache-manager';
+import { HealthController } from './health.controller';
 
 @Module({
   imports: [
@@ -74,5 +75,6 @@ import { CacheModule } from '@nestjs/cache-manager';
       useClass: SmartCacheInterceptor,
     },
   ],
+  controllers: [HealthController],
 })
  export class AppModule {}

@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ceygo-backend
+    restart: always
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    networks:
+      - ceygo-network
+
+  db:
+    image: postgis/postgis:15-3.3-alpine
+    container_name: ceygo-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-ceygo_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ceygo_pass}
+      POSTGRES_DB: ${DB_DATABASE:-ceygo_prod}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - ceygo-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: ceygo-redis
+    restart: always
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redisdata:/data
+    networks:
+      - ceygo-network
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: ceygo-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+    depends_on:
+      - backend
+    networks:
+      - ceygo-network
+
+networks:
+  ceygo-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+  redisdata:
+  certbot-etc:
+  certbot-var:
