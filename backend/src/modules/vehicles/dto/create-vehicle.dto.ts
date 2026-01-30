@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, IsNotEmpty } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsNotEmpty, IsEnum, IsUrl, IsBoolean, Matches, Min, Max } from 'class-validator';
 
 export class CreateVehicleDto {
   @IsString()
@@ -9,31 +9,52 @@ export class CreateVehicleDto {
   @IsNotEmpty()
   brand: string;
 
-  @IsString()
+  @IsUrl()
   @IsOptional()
   brandLogo?: string;
 
-  @IsString()
+  @IsUrl()
   @IsOptional()
   imageUrl?: string;
 
   @IsNumber()
   @IsNotEmpty()
+  @Min(0)
   pricePerDay: number;
 
   @IsNumber()
   @IsNotEmpty()
+  @Min(1)
   seats: number;
 
-  @IsString()
+  @IsEnum(['Manual', 'Auto'])
   @IsNotEmpty()
   transmission: string;
 
-  @IsString()
+  @IsEnum(['Petrol', 'Diesel', 'Electric', 'Hybrid'])
   @IsNotEmpty()
   fuelType: string;
 
   @IsString()
   @IsNotEmpty()
+  @Matches(/^(?:[A-Z]{1,3}-[0-9]{4}|[0-9]{1,3}-[0-9]{4})$/, {
+    message: 'Plate number must be a valid Sri Lankan format (e.g., WP CAB-1234 or 15-1234)',
+  })
   plateNo: string;
+
+  @IsBoolean()
+  @IsOptional()
+  airportPickupAvailable?: boolean = false;
+
+  @IsString()
+  @IsOptional()
+  location?: string;
+
+  @IsNumber()
+  @IsOptional()
+  lat?: number;
+
+  @IsNumber()
+  @IsOptional()
+  lng?: number;
 }

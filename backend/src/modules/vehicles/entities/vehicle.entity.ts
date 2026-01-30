@@ -88,6 +88,9 @@ export class Vehicle {
   @OneToMany(() => Booking, (booking: Booking) => booking.vehicle)
   bookings = new Collection<Booking>(this);
 
+  @Property({ nullable: true })
+  deletedAt?: Date;
+
   @Property({ onCreate: () => new Date() })
   createdAt: Date = new Date();
 
