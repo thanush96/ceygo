@@ -7,6 +7,7 @@ import { Booking } from '@modules/bookings/entities/booking.entity';
 import { Payment } from '@modules/payments/entities/payment.entity';
 import { Parser } from 'json2csv';
 import { Readable } from 'stream';
+import { AuditService } from '@common/services/audit.service';
 
 @Injectable()
 export class AdminService {
@@ -20,6 +21,7 @@ export class AdminService {
     @InjectRepository(Payment)
     private readonly paymentRepository: EntityRepository<Payment>,
     private readonly em: EntityManager,
+    private readonly auditService: AuditService,
   ) {}
 
   // --- Verification ---
@@ -37,6 +39,7 @@ export class AdminService {
     user.verificationStatus = status;
     if (reason) user.reason = reason;
     await this.em.flush();
+    this.auditService.logAction('ADMIN', 'USER_VERIFY', { userId, status, reason });
     return user;
   }
 
@@ -47,6 +50,7 @@ export class AdminService {
     vehicle.verificationStatus = status;
     if (reason) vehicle.reason = reason;
     await this.em.flush();
+    this.auditService.logAction('ADMIN', 'VEHICLE_VERIFY', { vehicleId, status, reason });
     return vehicle;
   }
 

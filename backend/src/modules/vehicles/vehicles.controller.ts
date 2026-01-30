@@ -10,6 +10,7 @@ import {
   UseGuards,
   Request,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { VehiclesService } from './vehicles.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
@@ -30,6 +31,7 @@ export class VehiclesController {
   }
 
   @Get()
+  @Throttle({ search: { limit: 60, ttl: 60000 } })
   search(@Query() searchDto: SearchVehicleDto) {
     return this.vehiclesService.searchVehicles(searchDto);
   }

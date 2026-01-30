@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards, Res } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { Response } from 'express';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
@@ -8,6 +9,7 @@ import { Roles } from '@common/decorators/roles.decorator';
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('admin')
+@Throttle({ default: { limit: 100, ttl: 60000 } })
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 

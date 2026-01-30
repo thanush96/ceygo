@@ -15,6 +15,7 @@ export class CreateVehicleDto {
 
   @IsUrl()
   @IsOptional()
+  @Matches(/\.(jpg|jpeg|png|webp)$/i, { message: 'Image must be a valid JPG, PNG or WEBP file' })
   imageUrl?: string;
 
   @IsNumber()

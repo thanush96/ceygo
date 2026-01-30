@@ -6,6 +6,7 @@ import { User } from '@modules/users/entities/user.entity';
 import { OtpService } from './otp.service';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { RegisterDto } from './dto/register.dto';
+import { AuditService } from '@common/services/audit.service';
 
 @Injectable()
 export class AuthService {
@@ -18,6 +19,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly otpService: OtpService,
+    private readonly auditService: AuditService,
   ) {}
 
   async sendLoginOtp(phone: string) {
@@ -39,6 +41,7 @@ export class AuthService {
     const stored = this.otpStore.get(phone);
 
     if (!stored || stored.otp !== otp || stored.expires < Date.now()) {
+      this.auditService.logAction('UNKNOWN', 'AUTH_OTP_FAILURE', { phone });
       throw new UnauthorizedException('Invalid or expired OTP');
     }
 
@@ -51,6 +54,7 @@ export class AuthService {
     }
 
     const tokens = await this.generateTokens(user);
+    this.auditService.logAction(user.id, 'AUTH_LOGIN_SUCCESS', { phone });
     return { isNewUser: false, user, ...tokens };
   }
 

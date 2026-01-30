@@ -15,6 +15,7 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 import { SmartCacheInterceptor } from './common/interceptors/smart-cache.interceptor';
 import { CacheModule } from '@nestjs/cache-manager';
 import { HealthController } from './health.controller';
+import { AuditService } from './common/services/audit.service';
 
 @Module({
   imports: [
@@ -47,13 +48,21 @@ import { HealthController } from './health.controller';
     }),
 
     ThrottlerModule.forRoot([{
-      name: 'short',
+      name: 'default',
+      ttl: 60000,
+      limit: 100,
+    }, {
+      name: 'auth',
+      ttl: 60000,
+      limit: 5,
+    }, {
+      name: 'search',
       ttl: 60000,
       limit: 60,
     }, {
-      name: 'authenticated',
+      name: 'booking',
       ttl: 60000,
-      limit: 120,
+      limit: 10,
     }]),
 
     // Feature Modules
@@ -74,6 +83,7 @@ import { HealthController } from './health.controller';
       provide: APP_INTERCEPTOR,
       useClass: SmartCacheInterceptor,
     },
+    AuditService,
   ],
   controllers: [HealthController],
 })

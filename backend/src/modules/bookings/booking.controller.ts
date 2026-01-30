@@ -1,4 +1,5 @@
 import { Controller, Post, Body, Get, Param, Patch, UseGuards, Request } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { BookingService } from './booking.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
@@ -6,6 +7,7 @@ import { RolesGuard } from '@modules/auth/guards/roles.guard';
 import { Roles } from '@common/decorators/roles.decorator';
 
 @Controller('bookings')
+@Throttle({ booking: { limit: 10, ttl: 60000 } })
 export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
 
