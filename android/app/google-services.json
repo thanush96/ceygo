@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "924986310335",
+    "project_id": "ceygo-12557",
+    "storage_bucket": "ceygo-12557.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:924986310335:android:a53d04ade2ba5f2c6ed00a",
+        "android_client_info": {
+          "package_name": "com.ceygo.app.ceygo_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtG_moV24ZJWKUwmRwzorQN6wdE1yDdaU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
