@@ -27,6 +27,7 @@ export class Vehicle {
   @IsUrl()
   imageUrl: string;
 
+  @Index()
   @Property({ type: 'decimal', precision: 10, scale: 2 })
   @IsNumber()
   pricePerDay: number;
@@ -43,6 +44,7 @@ export class Vehicle {
   @IsEnum(['Petrol', 'Diesel', 'Electric', 'Hybrid'])
   fuelType: string;
 
+  @Index()
   @Property({ type: 'decimal', precision: 2, scale: 1, default: 0 })
   @IsNumber()
   @Min(0)
@@ -89,10 +91,12 @@ export class Vehicle {
   @IsString()
   location: string;
 
+  @Index()
   @Property({ type: 'decimal', precision: 10, scale: 8, nullable: true })
   @IsNumber()
   lat: number;
 
+  @Index()
   @Property({ type: 'decimal', precision: 11, scale: 8, nullable: true })
   @IsNumber()
   lng: number;

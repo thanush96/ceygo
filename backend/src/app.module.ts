@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
@@ -9,6 +10,10 @@ import { BookingsModule } from './modules/bookings/bookings.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { SmartCacheInterceptor } from './common/interceptors/smart-cache.interceptor';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -40,6 +45,16 @@ import { AdminModule } from './modules/admin/admin.module';
       }),
     }),
 
+    ThrottlerModule.forRoot([{
+      name: 'short',
+      ttl: 60000,
+      limit: 60,
+    }, {
+      name: 'authenticated',
+      ttl: 60000,
+      limit: 120,
+    }]),
+
     // Feature Modules
     AuthModule,
     UsersModule,
@@ -49,5 +64,15 @@ import { AdminModule } from './modules/admin/admin.module';
     ChatModule,
     AdminModule,
   ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SmartCacheInterceptor,
+    },
+  ],
 })
-export class AppModule {}
+ export class AppModule {}
