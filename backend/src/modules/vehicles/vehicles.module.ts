@@ -8,6 +8,6 @@ import { Vehicle } from './entities/vehicle.entity';
   imports: [MikroOrmModule.forFeature([Vehicle])],
   controllers: [VehiclesController],
   providers: [VehiclesService],
-  exports: [VehiclesService],
+  exports: [VehiclesService, MikroOrmModule],
 })
 export class VehiclesModule {}

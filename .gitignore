@@ -10,7 +10,31 @@
 .history
 .svn/
 .swiftpm/
-migrate_working_dir/
+
+# --- NestJS Backend Specifics ---
+backend/node_modules/
+backend/dist/
+backend/migrate_working_dir/
+
+# --- Lock Files (See Note Below) ---
+# backend/package-lock.json  # Tracked by default unless specifically ignored
+# backend/yarn.lock
+
+# --- Logs & Temp Files ---
+backend/*.log
+backend/yarn-error.log
+backend/npm-debug.log*
+
+# --- Environment Secrets (CRITICAL for CeyGo) ---
+backend/.env
+backend/.env.local
+backend/.env.production
+
+# --- Flutter Specifics (If in the same repo) ---
+.dart_tool/
+build/
+ios/Flutter/Generated.xcconfig
+android/local.properties
 
 # IntelliJ related
 *.iml

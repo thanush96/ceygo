@@ -1,7 +1,9 @@
 import { Entity, PrimaryKey, Property, OneToMany, Collection, Rel } from '@mikro-orm/core';
-import { IsEmail, IsNotEmpty, IsString, Matches, IsEnum } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, Matches, IsEnum, IsOptional, IsUrl } from 'class-validator';
 import { v4 } from 'uuid';
 import { Booking } from '@modules/bookings/entities/booking.entity';
+import { Vehicle } from '@modules/vehicles/entities/vehicle.entity';
+import { ChatMessage } from '@modules/chat/entities/chat-message.entity';
 
 @Entity({ tableName: 'users' })
 export class User {
@@ -25,6 +27,15 @@ export class User {
   })
   phone: string;
 
+  @Property()
+  @IsString()
+  @IsNotEmpty()
+  nationality: string;
+
+  @Property()
+  @IsEnum(['NIC', 'Passport'])
+  idType: string;
+
   @Property({ unique: true })
   @IsString()
   @IsNotEmpty()
@@ -34,11 +45,30 @@ export class User {
   nic: string;
 
   @Property()
+  @IsString()
+  @IsNotEmpty()
+  licenseNo: string;
+
+  @Property({ nullable: true })
+  @IsUrl()
+  @IsOptional()
+  profilePic?: string;
+
+  @Property()
   @IsEnum(['renter', 'owner', 'admin'])
   role: string = 'renter';
 
-  @OneToMany(() => Booking, (booking: Booking) => booking.user)
+  @OneToMany(() => Vehicle, (vehicle: Vehicle) => vehicle.owner)
+  vehicles = new Collection<Vehicle>(this);
+
+  @OneToMany(() => Booking, (booking: Booking) => booking.renter)
   bookings = new Collection<Booking>(this);
+
+  @OneToMany(() => ChatMessage, (message: ChatMessage) => message.sender)
+  sentMessages = new Collection<ChatMessage>(this);
+
+  @OneToMany(() => ChatMessage, (message: ChatMessage) => message.receiver)
+  receivedMessages = new Collection<ChatMessage>(this);
 
   @Property({ onCreate: () => new Date() })
   createdAt: Date = new Date();
