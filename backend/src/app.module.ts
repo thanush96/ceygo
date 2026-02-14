@@ -32,15 +32,16 @@ import { CommonModule } from './common/common.module';
     }),
 
     MikroOrmModule.forRootAsync({
+      driver: PostgreSqlDriver,
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         driver: PostgreSqlDriver,
         host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        user: configService.get<string>('DB_USERNAME'),
+        port: parseInt(configService.get<string>('DB_PORT', '5432'), 10),
+        user: configService.get<string>('DB_USERNAME') || configService.get<string>('DB_USER'),
         password: configService.get<string>('DB_PASSWORD'),
-        dbName: configService.get<string>('DB_DATABASE'),
+        dbName: configService.get<string>('DB_DATABASE') || configService.get<string>('DB_NAME'),
         entities: ['dist/**/*.entity.js'],
         entitiesTs: ['src/**/*.entity.ts'],
         debug: configService.get<string>('NODE_ENV') === 'development',

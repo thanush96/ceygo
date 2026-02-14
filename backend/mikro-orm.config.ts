@@ -7,9 +7,9 @@ const config: Options = {
   driver: PostgreSqlDriver,
   host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT || '5432', 10),
-  user: process.env.DB_USERNAME,
+  user: process.env.DB_USERNAME || process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  dbName: process.env.DB_DATABASE,
+  dbName: process.env.DB_DATABASE || process.env.DB_NAME,
   entities: ['dist/**/*.entity.js'],
   entitiesTs: ['src/**/*.entity.ts'],
   driverOptions: {

@@ -2,9 +2,10 @@ version: '3.8'
 
 services:
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${DOCKER_IMAGE_NAME:-ceygo-backend}:latest
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
     container_name: ceygo-backend
     restart: always
     environment:
@@ -22,9 +23,9 @@ services:
     container_name: ceygo-db
     restart: always
     environment:
-      POSTGRES_USER: ${DB_USERNAME:-ceygo_user}
+      POSTGRES_USER: ${DB_USERNAME:-${DB_USER:-ceygo_user}}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-ceygo_pass}
-      POSTGRES_DB: ${DB_DATABASE:-ceygo_prod}
+      POSTGRES_DB: ${DB_DATABASE:-${DB_NAME:-ceygo_prod}}
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
