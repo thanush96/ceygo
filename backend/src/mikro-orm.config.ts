@@ -1,26 +1,30 @@
-import { defineConfig } from '@mikro-orm/postgresql';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Options, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-export default defineConfig({
+const config: Options = {
   driver: PostgreSqlDriver,
   host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '5432'),
-  user: process.env.DB_USERNAME,
+  port: parseInt(process.env.DB_PORT || '5432', 10),
+  user: process.env.DB_USERNAME || process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  dbName: process.env.DB_DATABASE,
+  dbName: process.env.DB_DATABASE || process.env.DB_NAME,
   entities: ['dist/**/*.entity.js'],
   entitiesTs: ['src/**/*.entity.ts'],
-  debug: process.env.NODE_ENV === 'development',
   driverOptions: {
     connection: {
       ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
     },
   },
   migrations: {
-    path: 'src/migrations',
+    path: 'dist/migrations',
     pathTs: 'src/migrations',
   },
-});
+  seeder: {
+    path: 'dist/seeders',
+    pathTs: 'src/seeders',
+  },
+};
+
+export default config;
