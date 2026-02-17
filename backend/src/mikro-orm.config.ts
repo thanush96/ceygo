@@ -1,4 +1,6 @@
 import { Options, PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Migrator } from '@mikro-orm/migrations';
+import { SeedManager } from '@mikro-orm/seeder';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -18,13 +20,14 @@ const config: Options = {
     },
   },
   migrations: {
-    path: 'dist/migrations',
-    pathTs: 'src/migrations',
+    path: 'dist/database/migrations',
+    pathTs: 'src/database/migrations',
   },
   seeder: {
     path: 'dist/seeders',
     pathTs: 'src/seeders',
   },
+  extensions: [Migrator, SeedManager],
 };
 
 export default config;
