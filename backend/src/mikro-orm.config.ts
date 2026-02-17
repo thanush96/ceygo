@@ -20,12 +20,12 @@ const config: Options = {
     },
   },
   migrations: {
-    path: 'dist/database/migrations',
+    path: 'dist/src/database/migrations',
     pathTs: 'src/database/migrations',
   },
   seeder: {
-    path: 'dist/seeders',
-    pathTs: 'src/seeders',
+    path: 'dist/src/database/seeders',
+    pathTs: 'src/database/seeders',
   },
   extensions: [Migrator, SeedManager],
 };
