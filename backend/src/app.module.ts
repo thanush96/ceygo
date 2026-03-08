@@ -10,6 +10,7 @@ import { BookingsModule } from './modules/bookings/bookings.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { FavoritesModule } from './modules/favorites/favorites.module';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { SmartCacheInterceptor } from './common/interceptors/smart-cache.interceptor';
@@ -81,6 +82,7 @@ import { CommonModule } from './common/common.module';
     PaymentsModule,
     ChatModule,
     AdminModule,
+    FavoritesModule,
     QueuesModule,
     CommonModule,
   ],

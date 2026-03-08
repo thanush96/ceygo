@@ -10,55 +10,80 @@ class FavoritesContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final favorites = ref.watch(favoritesProvider);
+    final favoritesAsync = ref.watch(favoritesProvider);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: const CustomAppBar(title: "Favorites"),
-      body:
-          favorites.isEmpty
-              ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.favorite_outline,
-                      size: 80,
-                      color: Colors.grey.shade400,
+      body: favoritesAsync.when(
+        data: (favorites) {
+          if (favorites.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.favorite_outline,
+                    size: 80,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "No favorites yet",
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      "No favorites yet",
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w500,
-                      ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Save your favorite cars here",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade500,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Save your favorite cars here",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade500,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-              : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: favorites.length,
-                itemBuilder: (context, index) {
-                  final car = favorites[index];
-                  return CarCard(
-                    car: car,
-                    onTap: () {
-                      context.push('/car-details/${car.id}');
-                    },
-                  );
-                },
+                  ),
+                ],
               ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: favorites.length,
+            itemBuilder: (context, index) {
+              final car = favorites[index];
+              return CarCard(
+                car: car,
+                isFavorite: true,
+                onFavoriteToggle: () {
+                  ref.read(favoritesProvider.notifier).toggleFavorite(car);
+                },
+                onTap: () {
+                  context.push('/car-details/${car.id}');
+                },
+              );
+            },
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 60, color: Colors.grey.shade400),
+              const SizedBox(height: 16),
+              Text('Failed to load favorites', style: TextStyle(color: Colors.grey.shade600)),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () => ref.invalidate(favoritesProvider),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

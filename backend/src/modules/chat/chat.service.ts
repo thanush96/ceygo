@@ -36,10 +36,6 @@ export class ChatService {
   }
 
   async sendMessage(senderId: string, receiverId: string, message: string) {
-    if (!(await this.canChat(senderId, receiverId))) {
-      throw new ForbiddenException('You can only chat with users you have an active booking with');
-    }
-
     const sender = await this.userRepository.findOne({ id: senderId });
     const receiver = await this.userRepository.findOne({ id: receiverId });
 

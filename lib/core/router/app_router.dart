@@ -10,6 +10,7 @@ import 'package:ceygo_app/features/home/presentation/screens/car_details_screen.
 import 'package:ceygo_app/features/home/presentation/screens/search_screen.dart';
 import 'package:ceygo_app/features/booking/presentation/screens/checkout_screen.dart';
 import 'package:ceygo_app/features/booking/presentation/screens/booking_details_screen.dart';
+import 'package:ceygo_app/features/booking/presentation/screens/chat_screen.dart';
 import 'package:ceygo_app/features/booking/domain/models/booking.dart';
 import 'package:ceygo_app/core/widgets/main_shell.dart';
 import 'package:ceygo_app/features/auth/presentation/providers/auth_provider.dart';
@@ -136,6 +137,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final booking = state.extra as Booking;
           return BookingDetailsScreen(booking: booking);
+        },
+      ),
+      GoRoute(
+        path: '/chat/:userId',
+        builder: (context, state) {
+          final extras = state.extra as Map<String, dynamic>? ?? {};
+          return ChatDetailScreen(
+            userId: state.pathParameters['userId']!,
+            userName: extras['userName'] as String? ?? 'Owner',
+            isOnline: extras['isOnline'] as bool? ?? false,
+          );
         },
       ),
     ],

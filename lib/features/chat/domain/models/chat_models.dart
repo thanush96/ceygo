@@ -33,10 +33,14 @@ class ChatConversation {
 
   static String _buildUserName(Map<String, dynamic>? user) {
     if (user == null) return 'Unknown';
+    // User entity has a single 'name' field
+    final name = user['name'] as String? ?? '';
+    if (name.isNotEmpty) return name;
+    // Fallback for firstName/lastName if ever used
     final first = user['firstName'] as String? ?? '';
     final last = user['lastName'] as String? ?? '';
-    final name = '$first $last'.trim();
-    return name.isEmpty ? 'User' : name;
+    final fullName = '$first $last'.trim();
+    return fullName.isEmpty ? 'User' : fullName;
   }
 }
 

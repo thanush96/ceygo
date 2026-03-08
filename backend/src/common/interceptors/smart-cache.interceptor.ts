@@ -24,8 +24,8 @@ export class SmartCacheInterceptor implements NestInterceptor {
     const isGetRequest = request.method === 'GET';
     const hasAuth = !!request.headers.authorization;
 
-    // Skip cache for non-GET or private user-specific endpoints
-    if (!isGetRequest || (hasAuth && request.url.includes('/me'))) {
+    // Skip cache for non-GET or authenticated user-specific endpoints
+    if (!isGetRequest || hasAuth) {
       return next.handle();
     }
 

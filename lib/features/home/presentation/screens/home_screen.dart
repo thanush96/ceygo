@@ -65,7 +65,6 @@ class HomeContent extends ConsumerStatefulWidget {
 
 class _HomeContentState extends ConsumerState<HomeContent> {
   String _selectedLocation = 'Colombo, Sri Lanka';
-  String? _selectedBrand; // null means "All" is selected
   late TextEditingController _searchController;
 
   @override
@@ -264,7 +263,7 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                                         '/search',
                                         extra: {
                                           'query': _searchController.text,
-                                          'brand': _selectedBrand,
+                                          'brand': ref.read(selectedBrandProvider),
                                           'location': _selectedLocation,
                                         },
                                       );
@@ -309,11 +308,9 @@ class _HomeContentState extends ConsumerState<HomeContent> {
 
                     // Brand Filter Chips
                     _BrandChips(
-                      selectedBrand: _selectedBrand,
+                      selectedBrand: ref.watch(selectedBrandProvider),
                       onBrandSelected: (brand) {
-                        setState(() {
-                          _selectedBrand = brand;
-                        });
+                        ref.read(selectedBrandProvider.notifier).state = brand;
                       },
                     ),
                     // const SizedBox(height: 32),
@@ -344,21 +341,25 @@ class _HomeContentState extends ConsumerState<HomeContent> {
             // Car List Grid
             carsAsyncValue.when(
               data: (cars) {
-                // Display all cars without any filtering
-                final allCars = cars;
+                final favoriteIds = ref.watch(favoriteIdsProvider);
 
                 return SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
-                      final car = allCars[index];
+                      final car = cars[index];
+                      final isFav = favoriteIds.contains(car.id);
                       return CarCard(
                         car: car,
+                        isFavorite: isFav,
+                        onFavoriteToggle: () {
+                          ref.read(favoritesProvider.notifier).toggleFavorite(car);
+                        },
                         onTap: () {
                           context.push('/car-details/${car.id}');
                         },
                       );
-                    }, childCount: allCars.length),
+                    }, childCount: cars.length),
                   ),
                 );
               },

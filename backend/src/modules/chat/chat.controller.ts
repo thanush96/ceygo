@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { ChatService } from './chat.service';
+import { ChatGateway } from './chat.gateway';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 
 @ApiTags('Chat')
@@ -8,7 +9,10 @@ import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class ChatController {
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly chatGateway: ChatGateway,
+  ) {}
 
   @Get('conversations')
   @ApiOperation({ summary: 'Get list of conversations' })
@@ -39,11 +43,14 @@ export class ChatController {
   @ApiOperation({ summary: 'Send a new message' })
   @ApiResponse({ status: 201, description: 'Message sent successfully' })
   @ApiBody({ schema: { type: 'object', example: { receiverId: 'uuid', message: 'Hello' } } })
-  sendMessage(
+  async sendMessage(
     @Request() req,
     @Body() body: { receiverId: string; message: string },
   ) {
-    return this.chatService.sendMessage(req.user.id, body.receiverId, body.message);
+    const message = await this.chatService.sendMessage(req.user.id, body.receiverId, body.message);
+    // Emit via WebSocket for real-time delivery to the receiver
+    this.chatGateway.server.to(`chat_${body.receiverId}`).emit('receive_message', message);
+    return message;
   }
 
   @Post('read/:senderId')

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/features/home/presentation/providers/home_providers.dart';
+import 'package:ceygo_app/features/home/domain/models/car.dart';
 import 'package:ceygo_app/core/widgets/photo_gallery.dart';
 import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
 
@@ -48,15 +49,14 @@ class CarDetailsScreen extends ConsumerWidget {
 }
 
 class _CarDetailsContent extends ConsumerWidget {
-  final dynamic car;
+  final Car car;
 
   const _CarDetailsContent({required this.car});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final favorites = ref.watch(favoritesProvider.notifier);
-    final favoritesList = ref.watch(favoritesProvider);
-    final isFavorite = favoritesList.any((c) => c.id == car.id);
+    final favoriteIds = ref.watch(favoriteIdsProvider);
+    final isFavorite = favoriteIds.contains(car.id);
 
     return Stack(
       children: [
@@ -76,7 +76,8 @@ class _CarDetailsContent extends ConsumerWidget {
           leftIcon: Icons.arrow_back,
           onLeftPressed: () => context.pop(),
           rightIcon: isFavorite ? Icons.favorite : Icons.favorite_border,
-          onRightPressed: () => favorites.toggleFavorite(car),
+          onRightPressed: () =>
+              ref.read(favoritesProvider.notifier).toggleFavorite(car),
         ),
         _BottomBookButton(car: car),
       ],
@@ -86,7 +87,7 @@ class _CarDetailsContent extends ConsumerWidget {
 
 // Hero Section
 class _HeroSection extends StatelessWidget {
-  final dynamic car;
+  final Car car;
 
   const _HeroSection({required this.car});
 
@@ -109,7 +110,7 @@ class _HeroSection extends StatelessWidget {
 }
 
 class _CarImageWithSpecs extends StatelessWidget {
-  final dynamic car;
+  final Car car;
 
   const _CarImageWithSpecs({required this.car});
 
@@ -164,7 +165,7 @@ class _CarImageWithSpecs extends StatelessWidget {
 }
 
 class _DescriptionCard extends StatelessWidget {
-  final dynamic car;
+  final Car car;
 
   const _DescriptionCard({required this.car});
 
@@ -211,12 +212,19 @@ class _DescriptionCard extends StatelessWidget {
 }
 
 class _RenterCard extends StatelessWidget {
-  final dynamic car;
+  final Car car;
 
   const _RenterCard({required this.car});
 
   @override
   Widget build(BuildContext context) {
+    final ownerName = car.ownerName ?? 'Owner';
+    final initials = ownerName
+        .split(' ')
+        .map((e) => e.isNotEmpty ? e[0] : '')
+        .join()
+        .toUpperCase();
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(20),
@@ -225,7 +233,7 @@ class _RenterCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Renter',
+            'Owner',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
@@ -234,16 +242,25 @@ class _RenterCard extends StatelessWidget {
               CircleAvatar(
                 radius: 30,
                 backgroundColor: Colors.grey.shade300,
-                child: const Icon(Icons.person, size: 30),
+                child: initials.isNotEmpty
+                    ? Text(
+                        initials,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.person, size: 30),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Alexander',
-                      style: TextStyle(
+                    Text(
+                      ownerName,
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -254,7 +271,7 @@ class _RenterCard extends StatelessWidget {
                         const Icon(Icons.star, color: Colors.amber, size: 18),
                         const SizedBox(width: 4),
                         Text(
-                          '4.9 (28 reviews)',
+                          '${car.rating} rating',
                           style: TextStyle(
                             color: Colors.grey.shade600,
                             fontSize: 14,
@@ -267,17 +284,26 @@ class _RenterCard extends StatelessWidget {
               ),
               _ActionButton(
                 icon: Icons.message,
-                onPressed: () => context.push('/chat'),
+                onPressed: () {
+                  if (car.ownerId != null) {
+                    context.push(
+                      '/chat/${car.ownerId}',
+                      extra: {'userName': ownerName},
+                    );
+                  }
+                },
               ),
               const SizedBox(width: 8),
               _ActionButton(icon: Icons.phone, onPressed: () {}),
             ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            'Pickup Location: 2715 Ash Dr. San Jose',
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-          ),
+          if (car.location != null) ...[
+            const SizedBox(height: 16),
+            Text(
+              'Pickup Location: ${car.location}',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+            ),
+          ],
         ],
       ),
     );
@@ -304,7 +330,7 @@ class _ActionButton extends StatelessWidget {
 }
 
 class _BottomBookButton extends StatelessWidget {
-  final dynamic car;
+  final Car car;
 
   const _BottomBookButton({required this.car});
 

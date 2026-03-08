@@ -41,146 +41,124 @@ class CarCard extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Stack(
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          // Brand Logo
-                          Container(
-                            width: 50,
-                            height: 50,
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(25),
-                            ),
-                            child: Image.network(
-                              car.brandLogo,
-                              fit: BoxFit.contain,
-                              errorBuilder:
-                                  (ctx, _, __) => Icon(
-                                    Icons.directions_car,
-                                    size: 20,
-                                    color: Colors.grey.shade400,
-                                  ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          // Brand and Name
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Text(
-                                //   car.brand,
-                                //   style: TextStyle(
-                                //     fontSize: 12,
-                                //     color: Colors.grey.shade600,
-                                //   ),
-                                // ),
-                                Text(
-                                  car.name,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-
-                                // Specs Row
-                                Row(
-                                  children: [
-                                    _CarSpecItem(
-                                      icon: Icons.settings,
-                                      text: car.transmission,
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Icon(
-                                      Icons.circle,
-                                      size: 6,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                    // const SizedBox(width: 10),
-                                    // _CarSpecItem(
-                                    //   icon: Icons.local_gas_station,
-                                    //   text: car.fuelType,
-                                    // ),
-                                    const SizedBox(width: 5),
-                                    _CarSpecItem(
-                                      icon: Icons.person,
-                                      text: "${car.seats} Seats",
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Rating
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            // decoration: BoxDecoration(
-                            //   color: Colors.grey.shade100,
-                            //   borderRadius: BorderRadius.circular(12),
-                            // ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Icons.star,
-                                  color: Colors.amber,
-                                  size: 17,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  "${car.rating}",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 17,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      // Favorite Icon Button
-                      if (onFavoriteToggle != null)
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: onFavoriteToggle,
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Icon(
-                                isFavorite
-                                    ? Icons.favorite
-                                    : Icons.favorite_border,
-                                color:
-                                    isFavorite
-                                        ? Colors.red
-                                        : Colors.grey.shade600,
-                                size: 24,
-                              ),
-                            ),
-                          ),
+                      // Brand Logo
+                      Container(
+                        width: 50,
+                        height: 50,
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(25),
                         ),
+                        child: Image.network(
+                          car.brandLogo,
+                          fit: BoxFit.contain,
+                          errorBuilder:
+                              (ctx, _, __) => Icon(
+                                Icons.directions_car,
+                                size: 20,
+                                color: Colors.grey.shade400,
+                              ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Brand and Name
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              car.name,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            // Specs Row
+                            Row(
+                              children: [
+                                _CarSpecItem(
+                                  icon: Icons.settings,
+                                  text: car.transmission,
+                                ),
+                                const SizedBox(width: 5),
+                                Icon(
+                                  Icons.circle,
+                                  size: 6,
+                                  color: Colors.grey.shade600,
+                                ),
+                                const SizedBox(width: 5),
+                                _CarSpecItem(
+                                  icon: Icons.person,
+                                  text: "${car.seats} Seats",
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Rating
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                              size: 17,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              "${car.rating}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 17,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
+                  // Favorite Icon Button
+                  if (onFavoriteToggle != null)
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: onFavoriteToggle,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            isFavorite
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            color:
+                                isFavorite
+                                    ? Colors.red
+                                    : Colors.grey.shade600,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

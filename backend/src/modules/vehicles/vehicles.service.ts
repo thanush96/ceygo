@@ -94,7 +94,7 @@ export class VehiclesService {
     return this.vehicleRepository.find({ owner: ownerId, deletedAt: null });
   }
 
-  async searchVehicles(filters: SearchVehicleDto & { lat?: number; lng?: number; radius?: number; q?: number }) {
+  async searchVehicles(filters: SearchVehicleDto & { lat?: number; lng?: number; radius?: number; q?: string }) {
     const {
       brand,
       location,
@@ -120,7 +120,7 @@ export class VehiclesService {
     if (cachedResults) return cachedResults;
 
     const qb = this.vehicleRepository.createQueryBuilder('v');
-    qb.select(['v.id', 'v.name', 'v.brand', 'v.brandLogo', 'v.pricePerDay', 'v.seats', 'v.transmission', 'v.fuelType', 'v.rating', 'v.tripCount', 'v.imageUrl', 'v.location', 'v.lat', 'v.lng'])
+    qb.select(['v.id', 'v.name', 'v.brand', 'v.brandLogo', 'v.pricePerDay', 'v.seats', 'v.transmission', 'v.fuelType', 'v.rating', 'v.tripCount', 'v.imageUrl', 'v.location', 'v.lat', 'v.lng', 'v.owner'])
       .where({ deletedAt: null, status: 'available', isBlacklisted: false });
 
     if (q) {

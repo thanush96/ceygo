@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
@@ -86,15 +87,12 @@ class _ChatTile extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ChatDetailScreen(
-                userId: conversation.userId,
-                userName: conversation.userName,
-                isOnline: conversation.isOnline,
-              ),
-            ),
+          context.push(
+            '/chat/${conversation.userId}',
+            extra: {
+              'userName': conversation.userName,
+              'isOnline': conversation.isOnline,
+            },
           );
         },
         child: Container(
@@ -297,12 +295,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
     _controller.clear();
 
     final repo = ref.read(chatRepositoryProvider);
-    final socketService = ref.read(chatSocketServiceProvider);
 
-    // Send via socket for real-time
-    socketService.sendMessage(widget.userId, text);
-
-    // Send via REST
+    // Send via REST (persists to DB), socket delivers in real-time via backend gateway
     try {
       final sent = await repo.sendMessage(widget.userId, text);
       if (!_localMessages.any((m) => m.id == sent.id)) {
@@ -357,9 +351,8 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen> {
             child: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.black),
               onPressed: () {
-                // Refresh conversations when going back
                 ref.read(conversationsProvider.notifier).refresh();
-                Navigator.pop(context);
+                context.pop();
               },
             ),
           ),

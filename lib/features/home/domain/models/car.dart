@@ -11,6 +11,8 @@ class Car {
   final double rating;
   final int tripCount;
   final String? location;
+  final String? ownerId;
+  final String? ownerName;
 
   const Car({
     required this.id,
@@ -25,9 +27,21 @@ class Car {
     this.rating = 0.0,
     this.tripCount = 0,
     this.location,
+    this.ownerId,
+    this.ownerName,
   });
 
   factory Car.fromJson(Map<String, dynamic> json) {
+    final owner = json['owner'];
+    String? ownerId;
+    String? ownerName;
+    if (owner is Map<String, dynamic>) {
+      ownerId = owner['id'] as String?;
+      ownerName = owner['name'] as String?;
+    } else if (owner is String) {
+      ownerId = owner;
+    }
+
     return Car(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -41,6 +55,8 @@ class Car {
       rating: (json['rating'] ?? 0).toDouble(),
       tripCount: (json['tripCount'] ?? json['trip_count'] ?? 0) as int,
       location: json['location'] as String?,
+      ownerId: ownerId,
+      ownerName: ownerName,
     );
   }
 }
