@@ -93,6 +93,7 @@ export class VehiclesService {
 
   async searchVehicles(filters: SearchVehicleDto & { lat?: number; lng?: number; radius?: number; q?: number }) {
     const {
+      brand,
       location,
       fuelType,
       transmission,
@@ -116,13 +117,14 @@ export class VehiclesService {
     if (cachedResults) return cachedResults;
 
     const qb = this.vehicleRepository.createQueryBuilder('v');
-    qb.select(['v.id', 'v.name', 'v.brand', 'v.pricePerDay', 'v.seats', 'v.transmission', 'v.fuelType', 'v.rating', 'v.imageUrl', 'v.location', 'v.lat', 'v.lng'])
+    qb.select(['v.id', 'v.name', 'v.brand', 'v.brandLogo', 'v.pricePerDay', 'v.seats', 'v.transmission', 'v.fuelType', 'v.rating', 'v.tripCount', 'v.imageUrl', 'v.location', 'v.lat', 'v.lng'])
       .where({ deletedAt: null, status: 'available', isBlacklisted: false });
 
     if (q) {
       qb.andWhere('(v.name ILIKE ? OR v.brand ILIKE ?)', [`%${q}%`, `%${q}%`]);
     }
 
+    if (brand) qb.andWhere({ brand });
     if (fuelType) qb.andWhere({ fuelType });
     if (transmission) qb.andWhere({ transmission });
     if (seats) qb.andWhere({ seats: { $gte: seats } });
@@ -168,6 +170,27 @@ export class VehiclesService {
 
     await this.cacheManager.set(cacheKey, result, 3600000); // 1 hour
     return result;
+  }
+
+  async getBrands(): Promise<{ name: string; logo: string }[]> {
+    const cacheKey = 'vehicle:brands';
+    const cached = await this.cacheManager.get<{ name: string; logo: string }[]>(cacheKey);
+    if (cached) return cached;
+
+    const results = await this.vehicleRepository.createQueryBuilder('v')
+      .select(['v.brand', 'v.brand_logo'])
+      .where({ deletedAt: null, status: 'available', isBlacklisted: false })
+      .groupBy(['v.brand', 'v.brand_logo'])
+      .orderBy({ 'v.brand': 'ASC' })
+      .execute('all');
+
+    const brands = results.map((r: any) => ({
+      name: r.brand,
+      logo: r.brand_logo || '',
+    }));
+
+    await this.cacheManager.set(cacheKey, brands, 3600000);
+    return brands;
   }
 
   async checkAvailability(vehicleId: string, startDate: string, endDate: string): Promise<boolean> {

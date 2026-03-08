@@ -30,7 +30,7 @@ export class PayHereService {
       .digest('hex')
       .toUpperCase();
 
-    const amountFormatted = params.amount.toLocaleString('en-us', { minimumFractionDigits: 2 }).replaceAll(',', '');
+    const amountFormatted = Number(params.amount).toFixed(2);
     
     const hash = crypto
       .createHash('md5')

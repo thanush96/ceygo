@@ -23,11 +23,37 @@ export class AuthService {
   ) {}
 
   async sendLoginOtp(phone: string) {
+    // Check if user exists before sending OTP
+    const user = await this.em.findOne(User, { phone });
+    if (!user) {
+      throw new BadRequestException('No account found with this phone number. Please sign up first.');
+    }
+
     const otp = this.otpService.generateOtp();
     const expiresAt = Date.now() + (this.configService.get<number>('OTP_EXPIRES_IN') || 300) * 1000;
-    
+
     this.otpStore.set(phone, { otp, expires: expiresAt });
-    
+
+    const sent = await this.otpService.sendOtp(phone, otp);
+    if (!sent) {
+      throw new BadRequestException('Failed to send OTP');
+    }
+
+    return { message: 'OTP sent successfully' };
+  }
+
+  async sendSignupOtp(phone: string) {
+    // Check if user already exists
+    const existingUser = await this.em.findOne(User, { phone });
+    if (existingUser) {
+      throw new BadRequestException('An account with this phone number already exists. Please login instead.');
+    }
+
+    const otp = this.otpService.generateOtp();
+    const expiresAt = Date.now() + (this.configService.get<number>('OTP_EXPIRES_IN') || 300) * 1000;
+
+    this.otpStore.set(`signup:${phone}`, { otp, expires: expiresAt });
+
     const sent = await this.otpService.sendOtp(phone, otp);
     if (!sent) {
       throw new BadRequestException('Failed to send OTP');
@@ -59,6 +85,16 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto) {
+    // Verify OTP before allowing registration
+    const otpKey = `signup:${registerDto.phone}`;
+    const stored = this.otpStore.get(otpKey);
+
+    if (!stored || stored.otp !== registerDto.otp || stored.expires < Date.now()) {
+      throw new UnauthorizedException('Invalid or expired OTP. Please request a new one.');
+    }
+
+    this.otpStore.delete(otpKey);
+
     const existingUser = await this.em.findOne(User, {
       $or: [{ email: registerDto.email }, { phone: registerDto.phone }, { nic: registerDto.idNumber }],
     });
@@ -73,7 +109,7 @@ export class AuthService {
     });
 
     await this.em.persistAndFlush(user);
-    
+
     const tokens = await this.generateTokens(user);
     return { user, ...tokens };
   }

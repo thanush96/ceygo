@@ -36,6 +36,13 @@ export class VehiclesController {
     return this.vehiclesService.createVehicle(req.user.id, createVehicleDto);
   }
 
+  @Get('brands')
+  @ApiOperation({ summary: 'Get all available vehicle brands' })
+  @ApiResponse({ status: 200, description: 'List of brands with logos' })
+  getBrands() {
+    return this.vehiclesService.getBrands();
+  }
+
   @Get()
   @Throttle({ search: { limit: 60, ttl: 60000 } })
   @CacheTTL(3600000) // 1 hour cache

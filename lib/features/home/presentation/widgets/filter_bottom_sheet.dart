@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:ceygo_app/features/home/data/mock_car_repository.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ceygo_app/features/home/presentation/providers/home_providers.dart';
 
-class FilterBottomSheet extends StatefulWidget {
+class FilterBottomSheet extends ConsumerStatefulWidget {
   const FilterBottomSheet({super.key});
 
   @override
-  State<FilterBottomSheet> createState() => _FilterBottomSheetState();
+  ConsumerState<FilterBottomSheet> createState() => _FilterBottomSheetState();
 }
 
-class _FilterBottomSheetState extends State<FilterBottomSheet> {
+class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   // Selected brand (null means "All")
   String? _selectedBrand;
 
@@ -62,7 +63,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final brands = MockCarRepository.getBrands();
+    final brandsAsync = ref.watch(brandsProvider);
 
     return Column(
       children: [
@@ -135,17 +136,21 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                       onTap: () => setState(() => _selectedBrand = null),
                       theme: theme,
                     ),
-                    // Brand chips
-                    ...brands.map(
-                      (brand) => _buildBrandChip(
-                        name: brand['name']!,
-                        logo: brand['logo'],
-                        isSelected: _selectedBrand == brand['name'],
-                        onTap:
-                            () =>
-                                setState(() => _selectedBrand = brand['name']),
-                        theme: theme,
+                    // Brand chips from API
+                    ...brandsAsync.when(
+                      data: (brands) => brands.map(
+                        (brand) => _buildBrandChip(
+                          name: brand['name']!,
+                          logo: brand['logo'],
+                          isSelected: _selectedBrand == brand['name'],
+                          onTap:
+                              () =>
+                                  setState(() => _selectedBrand = brand['name']),
+                          theme: theme,
+                        ),
                       ),
+                      loading: () => [const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))],
+                      error: (_, __) => <Widget>[],
                     ),
                   ],
                 ),

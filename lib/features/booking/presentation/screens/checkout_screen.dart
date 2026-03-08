@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
-import 'package:ceygo_app/features/booking/domain/models/booking.dart';
 import 'package:ceygo_app/features/booking/presentation/providers/booking_providers.dart';
 import 'package:ceygo_app/core/providers/navigation_provider.dart';
+import 'package:ceygo_app/core/services/api_service.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   final dynamic car;
@@ -22,6 +23,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
   TimeOfDay? _pickupTime;
+  bool _isSubmitting = false;
 
   void _presentDateTimePicker() async {
     showModalBottomSheet(
@@ -93,7 +95,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       child: Column(
                         children: [
                           // Car Image
-                          Image.asset(
+                          Image.network(
                             widget.car.imageUrl,
                             height: 120,
                             fit: BoxFit.contain,
@@ -246,57 +248,79 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           child: SafeArea(
             top: false,
             child: ElevatedButton(
-              onPressed: () {
-                if (_startDate == null || _endDate == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Please select date and time"),
-                    ),
-                  );
-                  return;
-                }
+              onPressed: _isSubmitting
+                  ? null
+                  : () async {
+                      if (_startDate == null || _endDate == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Please select date and time"),
+                          ),
+                        );
+                        return;
+                      }
 
-                // Calculate total price
-                final days = _endDate!.difference(_startDate!).inDays;
-                final totalPrice = widget.car.pricePerDay * days;
+                      setState(() => _isSubmitting = true);
 
-                // Create booking
-                final booking = Booking(
-                  id: DateTime.now().millisecondsSinceEpoch.toString(),
-                  car: widget.car,
-                  startDate: _startDate!,
-                  endDate: _endDate!,
-                  pickupTime:
-                      _pickupTime != null
-                          ? _pickupTime!.format(context)
-                          : 'Not set',
-                  pickupLocation:
-                      _pickupOption == 0
-                          ? 'Pickup from the dealership'
-                          : 'Deliver to my location',
-                  paymentMethod: 'Visa ending in 1111',
-                  totalPrice: totalPrice,
-                  bookingDate: DateTime.now(),
-                );
+                      try {
+                        final pickupLocation = _pickupOption == 0
+                            ? 'Pickup from the dealership'
+                            : 'Deliver to my location';
 
-                // Add to booking history
-                ref.read(bookingHistoryProvider.notifier).addBooking(booking);
+                        final result = await ref.read(bookingHistoryProvider.notifier).createBooking(
+                          vehicleId: widget.car.id,
+                          startDate: _startDate!,
+                          endDate: _endDate!,
+                          pickupLocation: pickupLocation,
+                          dropoffLocation: pickupLocation,
+                        );
 
-                // Show success message
-                // ScaffoldMessenger.of(context).showSnackBar(
-                //   const SnackBar(
-                //     content: Text("Booking Successful!"),
-                //     backgroundColor: Colors.green,
-                //   ),
-                // );
+                        if (!mounted) return;
 
-                // Navigate to booking history
-                context.go('/history');
-                // Set tab to history (index 1) after navigation
-                Future.microtask(
-                  () => ref.read(currentTabIndexProvider.notifier).setIndex(1),
-                );
-              },
+                        final paymentLink = result['paymentLink'] as String?;
+
+                        if (paymentLink != null && paymentLink.isNotEmpty) {
+                          // Open PayHere payment page
+                          final uri = Uri.parse(paymentLink);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          }
+                        }
+
+                        if (!mounted) return;
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Booking created! Complete payment to confirm."),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+
+                        // Navigate to booking history
+                        context.go('/history');
+                        Future.microtask(
+                          () => ref.read(currentTabIndexProvider.notifier).setIndex(1),
+                        );
+                      } on ApiException catch (e) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(e.message),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } catch (e) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Booking failed: $e"),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } finally {
+                        if (mounted) setState(() => _isSubmitting = false);
+                      }
+                    },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2563EB),
                 minimumSize: const Size(double.infinity, 56),
@@ -305,14 +329,23 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 ),
                 elevation: 0,
               ),
-              child: const Text(
-                'Confirm Booking',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
+              child: _isSubmitting
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      'Confirm Booking',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
             ),
           ),
         ),

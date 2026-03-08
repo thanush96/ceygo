@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter pub:*)",
+      "Read(//Users/thanush/flutter/bin/**)",
+      "Read(//usr/local/bin/**)",
+      "Read(//Users/thanush/Documents/Cey-Go/ceygo/$HOME/development/flutter/bin/**)",
+      "Read(//Users/thanush/**)",
+      "Bash(mdfind:*)",
+      "Bash(/Users/thanush/Public/flutter/bin/flutter run:*)",
+      "Bash(npm run:*)",
+      "Bash(flutter run:*)",
+      "Bash(npm install:*)",
+      "Bash(brew services:*)",
+      "Bash(pkill:*)",
+      "Bash(git checkout:*)",
+      "Read(//opt/homebrew/opt/**)",
+      "Bash(pg_isready)",
+      "Bash(docker-compose:*)",
+      "Bash(/usr/local/bin/docker ps:*)",
+      "Bash(brew install:*)",
+      "Bash(sudo mkdir:*)",
+      "Bash(npx mikro-orm:*)",
+      "Bash(npx tsc:*)",
+      "Bash(/Users/thanush/development/flutter/bin/flutter pub:*)",
+      "Bash(/Users/thanush/Public/flutter/bin/flutter pub:*)",
+      "Bash(/Users/thanush/Public/flutter/bin/flutter analyze:*)",
+      "Bash(brew list:*)",
+      "Bash(curl:*)",
+      "Bash(lsof:*)"
+    ]
+  }
+}

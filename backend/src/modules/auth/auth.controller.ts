@@ -27,8 +27,15 @@ export class AuthController {
     return this.authService.verifyOtp(verifyOtpDto);
   }
 
+  @Post('signup/send-otp')
+  @ApiOperation({ summary: 'Request OTP for signup' })
+  @ApiResponse({ status: 201, description: 'OTP sent successfully' })
+  async signupSendOtp(@Body() loginDto: LoginDto) {
+    return this.authService.sendSignupOtp(loginDto.phone);
+  }
+
   @Post('register')
-  @ApiOperation({ summary: 'Register a new user' })
+  @ApiOperation({ summary: 'Register a new user (requires OTP verification)' })
   @ApiResponse({ status: 201, description: 'User successfully registered' })
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);

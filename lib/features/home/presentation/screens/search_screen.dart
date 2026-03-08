@@ -1,9 +1,6 @@
-import 'dart:convert';
-
 import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
 import 'package:ceygo_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/features/home/presentation/providers/home_providers.dart';
@@ -33,8 +30,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   final FocusNode _focusNode = FocusNode();
   String _searchQuery = '';
   late String? _selectedBrand;
-  List<Map<String, String>> _allBrands = [];
-  bool _isLoadingBrands = false;
 
   @override
   void initState() {
@@ -43,43 +38,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     _searchController = TextEditingController(text: query);
     _searchQuery = query;
     _selectedBrand = widget.initialSelectedBrand;
-    _loadBrands();
-    // Auto-focus the search field when screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
     });
-  }
-
-  Future<void> _loadBrands() async {
-    setState(() {
-      _isLoadingBrands = true;
-    });
-    try {
-      final jsonStr = await rootBundle.loadString(
-        'assets/data/car_manufacturers.json',
-      );
-      final List<dynamic> data = jsonDecode(jsonStr) as List<dynamic>;
-      _allBrands =
-          data
-              .whereType<Map<String, dynamic>>()
-              .map(
-                (e) => {
-                  'name': (e['name'] ?? '').toString(),
-                  'logo': (e['thumb'] ?? '').toString(),
-                },
-              )
-              .where((e) => e['name']!.isNotEmpty && e['logo']!.isNotEmpty)
-              .toList();
-    } catch (e) {
-      // Ignore errors; keep list empty on failure
-      _allBrands = [];
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoadingBrands = false;
-        });
-      }
-    }
   }
 
   @override
@@ -220,144 +181,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
               // Brand Chips
               Padding(
-                padding: const EdgeInsets.only(
-                  left: 16.0,
-                  bottom: 16.0,
-                  right: 16,
+                padding: const EdgeInsets.only(left: 16.0, bottom: 16.0, right: 16),
+                child: _SearchBrandChips(
+                  selectedBrand: _selectedBrand,
+                  onBrandSelected: (brand) {
+                    setState(() {
+                      _selectedBrand = brand;
+                    });
+                  },
                 ),
-                child:
-                    _isLoadingBrands
-                        ? const SizedBox(
-                          height: 48,
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                        : SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              // "All" chip
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _selectedBrand = null;
-                                  });
-                                },
-                                child: Container(
-                                  margin: const EdgeInsets.only(right: 6),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 13,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color:
-                                        _selectedBrand == null
-                                            ? theme.primaryColor
-                                            : Colors.white,
-                                    borderRadius: BorderRadius.circular(30),
-                                    border:
-                                        _selectedBrand == null
-                                            ? null
-                                            : Border.all(
-                                              color: Colors.grey.shade300,
-                                            ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.apps,
-                                        color:
-                                            _selectedBrand == null
-                                                ? Colors.white
-                                                : Colors.black,
-                                        size: 18,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        "All",
-                                        style: TextStyle(
-                                          color:
-                                              _selectedBrand == null
-                                                  ? Colors.white
-                                                  : Colors.black,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              // Brand chips from asset list
-                              ..._allBrands.map((brand) {
-                                final isSelected =
-                                    _selectedBrand == brand['name'];
-                                return GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedBrand = brand['name'];
-                                    });
-                                  },
-                                  child: Container(
-                                    margin: const EdgeInsets.only(right: 6),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 8,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          isSelected
-                                              ? theme.primaryColor
-                                              : Colors.white,
-                                      borderRadius: BorderRadius.circular(30),
-                                      border:
-                                          isSelected
-                                              ? null
-                                              : Border.all(
-                                                color: Colors.grey.shade300,
-                                              ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                          child: Image.network(
-                                            brand['logo']!,
-                                            width: 32,
-                                            height: 32,
-                                            fit: BoxFit.contain,
-                                            errorBuilder:
-                                                (ctx, _, __) => Icon(
-                                                  Icons.directions_car,
-                                                  size: 18,
-                                                  color:
-                                                      isSelected
-                                                          ? Colors.white
-                                                          : Colors.grey,
-                                                ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          brand['name']!,
-                                          style: TextStyle(
-                                            color:
-                                                isSelected
-                                                    ? Colors.white
-                                                    : Colors.black,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              }),
-                            ],
-                          ),
-                        ),
               ),
 
               // Search Results
@@ -478,6 +310,77 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SearchBrandChips extends ConsumerWidget {
+  final String? selectedBrand;
+  final ValueChanged<String?> onBrandSelected;
+
+  const _SearchBrandChips({required this.selectedBrand, required this.onBrandSelected});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final brandsAsync = ref.watch(brandsProvider);
+    final theme = Theme.of(context);
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => onBrandSelected(null),
+            child: Container(
+              margin: const EdgeInsets.only(right: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+              decoration: BoxDecoration(
+                color: selectedBrand == null ? theme.primaryColor : Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                border: selectedBrand == null ? null : Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.apps, color: selectedBrand == null ? Colors.white : Colors.black, size: 18),
+                  const SizedBox(width: 8),
+                  Text("All", style: TextStyle(color: selectedBrand == null ? Colors.white : Colors.black, fontWeight: FontWeight.w600)),
+                ],
+              ),
+            ),
+          ),
+          ...brandsAsync.when(
+            data: (brands) => brands.map((brand) {
+              final isSelected = selectedBrand == brand['name'];
+              return GestureDetector(
+                onTap: () => onBrandSelected(brand['name']),
+                child: Container(
+                  margin: const EdgeInsets.only(right: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? theme.primaryColor : Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                    border: isSelected ? null : Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Image.network(brand['logo']!, width: 32, height: 32, fit: BoxFit.contain, errorBuilder: (ctx, _, __) => Icon(Icons.directions_car, size: 18, color: isSelected ? Colors.white : Colors.grey)),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(brand['name']!, style: TextStyle(color: isSelected ? Colors.white : Colors.black, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+            loading: () => [const Padding(padding: EdgeInsets.all(8), child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)))],
+            error: (_, __) => <Widget>[],
+          ),
+        ],
       ),
     );
   }

@@ -1,43 +1,111 @@
 import 'package:ceygo_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
+import 'package:ceygo_app/core/constants/countries.dart';
+import 'package:ceygo_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:ceygo_app/features/auth/domain/models/auth_state.dart';
 
-class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key});
+class SignupScreen extends ConsumerStatefulWidget {
+  final String? phone;
+  const SignupScreen({super.key, this.phone});
 
   @override
-  State<SignupScreen> createState() => _SignupScreenState();
+  ConsumerState<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
+class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
+  final _idNumberController = TextEditingController();
+  final _licenseController = TextEditingController();
 
-  bool _isPasswordVisible = false;
   bool _agreedToTerms = false;
-  Set<String> _selectedRole = {'Rider'}; // Default role
+  String _selectedRole = 'renter';
+  String _selectedIdType = 'NIC';
+  String _selectedNationality = 'Sri Lankan';
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.phone != null) {
+      _phoneController.text = widget.phone!;
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _idNumberController.dispose();
+    _licenseController.dispose();
+    super.dispose();
+  }
+
+  String _formatPhone(String phone) {
+    phone = phone.trim();
+    if (phone.startsWith('0')) {
+      return '+94${phone.substring(1)}';
+    }
+    if (!phone.startsWith('+')) {
+      return '+94$phone';
+    }
+    return phone;
+  }
+
+  void _handleRegister() {
+    if (!_agreedToTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please agree to the Terms of Service'),
+        ),
+      );
+      return;
+    }
+    if (_formKey.currentState!.validate()) {
+      ref.read(authProvider.notifier).requestSignupOtp(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        phone: _formatPhone(_phoneController.text),
+        nationality: _selectedNationality,
+        idType: _selectedIdType,
+        idNumber: _idNumberController.text.trim(),
+        licenseNo: _licenseController.text.trim(),
+        role: _selectedRole,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final authState = ref.watch(authProvider);
+    final isLoading = authState is AuthLoading;
+
+    ref.listen<AuthState>(authProvider, (prev, next) {
+      if (next is AuthAuthenticated) {
+        context.go('/home');
+      } else if (next is AuthOtpSent) {
+        context.push('/otp', extra: {'phone': next.phone, 'isSignup': true});
+      } else if (next is AuthError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+        ref.read(authProvider.notifier).resetError();
+      }
+    });
 
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        // appBar: AppBar(
-        //   backgroundColor: Colors.transparent,
-        //   leading: IconButton(
-        //     icon: const Icon(Icons.arrow_back_ios_new),
-        //     onPressed: () => context.pop(),
-        //   ),
-        //   title: Text(l10n.signup),
-        // ),
         body: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
@@ -49,15 +117,13 @@ class _SignupScreenState extends State<SignupScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 40),
                       Center(
                         child: Text(
                           "Create an Account",
                           style: theme.textTheme.headlineMedium?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color:
-                                Colors
-                                    .black, // Changed to white for better contrast on gradient
+                            color: Colors.black,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -65,22 +131,21 @@ class _SignupScreenState extends State<SignupScreen> {
                       const SizedBox(height: 8),
                       Center(
                         child: Text(
-                          "We're glad to have you here! Let's get started",
+                          "Complete your profile to get started",
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: Colors.black,
                           ),
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      const SizedBox(height: 30),
-
+                      const SizedBox(height: 24),
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
                             width: 1,
-                            color: Color(0xFF2563EB).withOpacity(0.3),
+                            color: const Color(0xFF2563EB).withOpacity(0.3),
                           ),
                           boxShadow: [
                             BoxShadow(
@@ -96,7 +161,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              // User/Driver Toggle
+                              // Role Toggle
                               Container(
                                 padding: const EdgeInsets.all(4),
                                 decoration: BoxDecoration(
@@ -106,51 +171,38 @@ class _SignupScreenState extends State<SignupScreen> {
                                     color: Colors.grey.shade200,
                                   ),
                                 ),
-
-                                // "rider": "Rider",
-                                // "provider": "Provider",
                                 child: Row(
                                   children: [
                                     _buildRoleSelector(
                                       context: context,
                                       label: l10n.rider,
                                       icon: Icons.person,
-                                      isSelected: _selectedRole.contains(
-                                        'Rider',
+                                      isSelected: _selectedRole == 'renter',
+                                      onTap: () => setState(
+                                        () => _selectedRole = 'renter',
                                       ),
-                                      onTap:
-                                          () => setState(
-                                            () => _selectedRole = {'Rider'},
-                                          ),
                                     ),
                                     _buildRoleSelector(
                                       context: context,
                                       label: l10n.provider,
                                       icon: Icons.drive_eta_outlined,
-                                      isSelected: _selectedRole.contains(
-                                        'Provider',
+                                      isSelected: _selectedRole == 'owner',
+                                      onTap: () => setState(
+                                        () => _selectedRole = 'owner',
                                       ),
-                                      onTap:
-                                          () => setState(
-                                            () => _selectedRole = {'Provider'},
-                                          ),
                                     ),
                                   ],
                                 ),
                               ),
-
-                              const SizedBox(height: 30),
+                              const SizedBox(height: 24),
                               TextFormField(
                                 controller: _nameController,
                                 decoration: const InputDecoration(
                                   labelText: "Full Name",
                                   prefixIcon: Icon(Icons.person_outline),
                                 ),
-                                validator:
-                                    (value) =>
-                                        value!.isEmpty
-                                            ? 'Please enter your name'
-                                            : null,
+                                validator: (value) =>
+                                    value!.isEmpty ? 'Please enter your name' : null,
                               ),
                               const SizedBox(height: 16),
                               TextFormField(
@@ -160,87 +212,120 @@ class _SignupScreenState extends State<SignupScreen> {
                                   prefixIcon: Icon(Icons.email_outlined),
                                 ),
                                 keyboardType: TextInputType.emailAddress,
-                                validator:
-                                    (value) =>
-                                        value!.isEmpty
-                                            ? 'Please enter your email'
-                                            : null,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your email';
+                                  }
+                                  if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$')
+                                      .hasMatch(value)) {
+                                    return 'Enter a valid email';
+                                  }
+                                  return null;
+                                },
                               ),
                               const SizedBox(height: 16),
                               TextFormField(
                                 controller: _phoneController,
                                 decoration: const InputDecoration(
                                   labelText: "Phone Number",
+                                  hintText: "07X XXX XXXX",
                                   prefixIcon: Icon(Icons.phone_outlined),
                                 ),
                                 keyboardType: TextInputType.phone,
-                                validator:
-                                    (value) =>
-                                        value!.isEmpty
-                                            ? 'Please enter your phone number'
-                                            : null,
-                              ),
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: !_isPasswordVisible,
-                                decoration: InputDecoration(
-                                  labelText: "Password",
-                                  prefixIcon: const Icon(Icons.lock_outline),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _isPasswordVisible
-                                          ? Icons.visibility
-                                          : Icons.visibility_off,
-                                    ),
-                                    onPressed:
-                                        () => setState(
-                                          () =>
-                                              _isPasswordVisible =
-                                                  !_isPasswordVisible,
-                                        ),
-                                  ),
-                                ),
-                                validator:
-                                    (value) =>
-                                        value!.length < 6
-                                            ? 'Password must be at least 6 characters'
-                                            : null,
-                              ),
-
-                              const SizedBox(height: 16),
-                              TextFormField(
-                                controller: _confirmPasswordController,
-                                obscureText: !_isPasswordVisible,
-                                decoration: InputDecoration(
-                                  labelText: "Confirm Password",
-                                  prefixIcon: const Icon(Icons.lock_outline),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _isPasswordVisible
-                                          ? Icons.visibility
-                                          : Icons.visibility_off,
-                                    ),
-                                    onPressed:
-                                        () => setState(
-                                          () =>
-                                              _isPasswordVisible =
-                                                  !_isPasswordVisible,
-                                        ),
-                                  ),
-                                ),
+                                readOnly: widget.phone != null,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Please confirm your password';
+                                    return 'Please enter your phone number';
                                   }
-                                  if (value != _passwordController.text) {
-                                    return 'Passwords do not match';
+                                  final phone = _formatPhone(value);
+                                  final regex = RegExp(r'^(?:\+94|0)7[0-9]{8}$');
+                                  if (!regex.hasMatch(phone)) {
+                                    return 'Enter a valid Sri Lankan number';
                                   }
                                   return null;
                                 },
                               ),
-
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 16),
+                              DropdownButtonFormField<String>(
+                                value: _selectedNationality,
+                                decoration: const InputDecoration(
+                                  labelText: "Nationality",
+                                  prefixIcon: Icon(Icons.flag_outlined),
+                                ),
+                                isExpanded: true,
+                                menuMaxHeight: 300,
+                                items: countries
+                                    .map((c) => DropdownMenuItem(
+                                          value: c,
+                                          child: Text(c),
+                                        ))
+                                    .toList(),
+                                onChanged: (value) {
+                                  setState(() => _selectedNationality = value!);
+                                },
+                                validator: (value) =>
+                                    value == null ? 'Please select nationality' : null,
+                              ),
+                              const SizedBox(height: 16),
+                              // ID Type Dropdown
+                              DropdownButtonFormField<String>(
+                                value: _selectedIdType,
+                                decoration: const InputDecoration(
+                                  labelText: "ID Type",
+                                  prefixIcon: Icon(Icons.badge_outlined),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(
+                                    value: 'NIC',
+                                    child: Text('NIC'),
+                                  ),
+                                  DropdownMenuItem(
+                                    value: 'Passport',
+                                    child: Text('Passport'),
+                                  ),
+                                ],
+                                onChanged: (value) {
+                                  setState(() => _selectedIdType = value!);
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _idNumberController,
+                                decoration: InputDecoration(
+                                  labelText: _selectedIdType == 'NIC'
+                                      ? "NIC Number"
+                                      : "Passport Number",
+                                  hintText: _selectedIdType == 'NIC'
+                                      ? "199012345678 or 901234567V"
+                                      : "N1234567",
+                                  prefixIcon: const Icon(Icons.credit_card_outlined),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your ${_selectedIdType} number';
+                                  }
+                                  final regex = RegExp(
+                                    r'^(?:[0-9]{9}[xXvV]|[0-9]{12}|[A-Z][0-9]{7})$',
+                                  );
+                                  if (!regex.hasMatch(value)) {
+                                    return 'Enter a valid ${_selectedIdType} number';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _licenseController,
+                                decoration: const InputDecoration(
+                                  labelText: "Driving License No",
+                                  prefixIcon: Icon(Icons.drive_eta_outlined),
+                                ),
+                                validator: (value) =>
+                                    value!.isEmpty
+                                        ? 'Please enter your license number'
+                                        : null,
+                              ),
+                              const SizedBox(height: 16),
                               CheckboxListTile(
                                 value: _agreedToTerms,
                                 onChanged: (value) {
@@ -271,42 +356,35 @@ class _SignupScreenState extends State<SignupScreen> {
                                     ],
                                   ),
                                 ),
-                                controlAffinity:
-                                    ListTileControlAffinity.leading,
+                                controlAffinity: ListTileControlAffinity.leading,
                                 contentPadding: EdgeInsets.zero,
                                 activeColor: theme.primaryColor,
                               ),
-
                               const SizedBox(height: 24),
                               ElevatedButton(
-                                onPressed: () {
-                                  if (!_agreedToTerms) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Please agree to the Terms of Service',
-                                        ),
-                                      ),
-                                    );
-                                    return;
-                                  }
-                                  if (_formKey.currentState!.validate()) {
-                                    context.push('/otp');
-                                  }
-                                },
+                                onPressed: isLoading ? null : _handleRegister,
                                 style: ElevatedButton.styleFrom(
                                   minimumSize: const Size(double.infinity, 56),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                 ),
-                                child: Text(
-                                  "Create Account",
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                child: isLoading
+                                    ? const SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.5,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Text(
+                                        "Create Account",
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                               ),
                               const SizedBox(height: 24),
                               Row(
@@ -317,7 +395,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                     style: TextStyle(color: Colors.grey[600]),
                                   ),
                                   GestureDetector(
-                                    onTap: () => context.pop(),
+                                    onTap: () => context.go('/login'),
                                     child: Text(
                                       "Login",
                                       style: TextStyle(
@@ -332,6 +410,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
@@ -361,16 +440,15 @@ class _SignupScreenState extends State<SignupScreen> {
           decoration: BoxDecoration(
             color: isSelected ? theme.primaryColor : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
-            boxShadow:
-                isSelected
-                    ? [
-                      BoxShadow(
-                        color: theme.primaryColor.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                    : null,
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: theme.primaryColor.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,

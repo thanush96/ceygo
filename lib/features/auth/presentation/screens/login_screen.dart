@@ -1,44 +1,81 @@
 import 'package:ceygo_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:ceygo_app/core/theme/app_theme.dart';
+import 'package:ceygo_app/features/auth/presentation/providers/auth_provider.dart';
+import 'package:ceygo_app/features/auth/domain/models/auth_state.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final _phoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _isPasswordVisible = false;
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  String _formatPhone(String phone) {
+    phone = phone.trim();
+    if (phone.startsWith('0')) {
+      return '+94${phone.substring(1)}';
+    }
+    if (!phone.startsWith('+')) {
+      return '+94$phone';
+    }
+    return phone;
+  }
+
+  void _handleLogin() {
+    if (_formKey.currentState!.validate()) {
+      final phone = _formatPhone(_phoneController.text);
+      ref.read(authProvider.notifier).requestOtp(phone);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+    final authState = ref.watch(authProvider);
+    final isLoading = authState is AuthLoading;
+
+    ref.listen<AuthState>(authProvider, (prev, next) {
+      // Only navigate if this screen triggered the OTP request
+      if (next is AuthOtpSent && prev is AuthLoading) {
+        if (!ref.read(authProvider.notifier).isSignupFlow) {
+          context.push('/otp', extra: next.phone);
+        }
+      } else if (next is AuthError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+        ref.read(authProvider.notifier).resetError();
+      }
+    });
 
     return GradientBackground(
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        // appBar: AppBar(
-        //   backgroundColor: Colors.transparent,
-        //   leading: IconButton(
-        //     icon: const Icon(Icons.arrow_back_ios_new),
-        //     onPressed: () => context.pop(),
-        //   ),
-        // ),
         body: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 48, // Subtract padding
+                  minHeight: constraints.maxHeight - 48,
                 ),
                 child: Center(
                   child: Column(
@@ -82,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                "Please login to your account",
+                                "Enter your phone number to continue",
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: Colors.grey[600],
                                 ),
@@ -90,75 +127,51 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 30),
                               TextFormField(
-                                controller: _emailController,
-                                decoration: InputDecoration(
-                                  labelText: l10n.email,
-                                  prefixIcon: const Icon(Icons.email_outlined),
+                                controller: _phoneController,
+                                decoration: const InputDecoration(
+                                  labelText: "Phone Number",
+                                  hintText: "07X XXX XXXX",
+                                  prefixIcon: Icon(Icons.phone_outlined),
+                                  prefixText: '+94 ',
                                 ),
-                                keyboardType: TextInputType.emailAddress,
+                                keyboardType: TextInputType.phone,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Please enter your email';
+                                    return 'Please enter your phone number';
+                                  }
+                                  final phone = _formatPhone(value);
+                                  final regex = RegExp(r'^(?:\+94|0)7[0-9]{8}$');
+                                  if (!regex.hasMatch(phone)) {
+                                    return 'Enter a valid Sri Lankan number';
                                   }
                                   return null;
                                 },
-                              ),
-                              const SizedBox(height: 20),
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: !_isPasswordVisible,
-                                decoration: InputDecoration(
-                                  labelText: l10n.password,
-                                  prefixIcon: const Icon(Icons.lock_outline),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _isPasswordVisible
-                                          ? Icons.visibility
-                                          : Icons.visibility_off,
-                                    ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _isPasswordVisible =
-                                            !_isPasswordVisible;
-                                      });
-                                    },
-                                  ),
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your password';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: TextButton(
-                                  onPressed:
-                                      () => context.push('/forgot-password'),
-                                  child: Text(l10n.forgotPassword),
-                                ),
                               ),
                               const SizedBox(height: 24),
                               ElevatedButton(
-                                onPressed: () {
-                                  if (_formKey.currentState!.validate()) {
-                                    context.go('/home');
-                                  }
-                                },
+                                onPressed: isLoading ? null : _handleLogin,
                                 style: ElevatedButton.styleFrom(
                                   minimumSize: const Size(double.infinity, 56),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                 ),
-                                child: Text(
-                                  l10n.login,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                child: isLoading
+                                    ? const SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.5,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : Text(
+                                        "Send OTP",
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                               ),
                               const SizedBox(height: 24),
                               Row(

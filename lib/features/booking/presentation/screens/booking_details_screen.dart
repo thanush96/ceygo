@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/features/booking/domain/models/booking.dart';
+import 'package:ceygo_app/features/booking/presentation/providers/booking_providers.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:ceygo_app/core/widgets/custom_app_bar.dart';
 import 'package:intl/intl.dart';
@@ -215,23 +216,13 @@ class BookingDetailsScreen extends ConsumerWidget {
                     const SizedBox(height: 24),
 
                     // Action Buttons
-                    if (booking.status == 'active') ...[
+                    if (['active', 'pending', 'confirmed', 'paid'].contains(booking.status.toLowerCase())) ...[
                       // Cancel Booking Button
                       SizedBox(
                         width: double.infinity,
                         height: 54,
                         child: OutlinedButton(
-                          onPressed: () {
-                            // Navigator.of(context).pop();
-                            // // TODO: Implement cancel booking functionality
-                            // ScaffoldMessenger.of(context).showSnackBar(
-                            //   const SnackBar(
-                            //     content: Text('Booking cancelled successfully'),
-                            //     backgroundColor: Colors.red,
-                            //   ),
-                            // );
-                            // context.pop();
-                          },
+                          onPressed: () => _showCancelDialog(context, ref),
                           style: OutlinedButton.styleFrom(
                             backgroundColor: Colors.red.shade50,
                             side: const BorderSide(
@@ -359,10 +350,57 @@ class BookingDetailsScreen extends ConsumerWidget {
     );
   }
 
+  void _showCancelDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cancel Booking'),
+        content: const Text('Are you sure you want to cancel this booking?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                await ref.read(bookingHistoryProvider.notifier).cancelBooking(booking.id);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Booking cancelled successfully'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  context.pop();
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to cancel: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Yes, Cancel', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'active':
+      case 'confirmed':
+      case 'paid':
         return Colors.green;
+      case 'pending':
+        return Colors.orange;
       case 'completed':
         return Colors.blue;
       case 'cancelled':

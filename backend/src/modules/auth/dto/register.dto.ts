@@ -1,7 +1,12 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, IsUrl, Matches } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, IsUrl, Length, Matches } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class RegisterDto {
+  @ApiProperty({ example: '123456', description: '6-digit OTP for phone verification' })
+  @IsString()
+  @IsNotEmpty()
+  @Length(6, 6)
+  otp: string;
   @ApiProperty({ example: 'John Doe', description: 'Full Name' })
   @IsString()
   @IsNotEmpty()

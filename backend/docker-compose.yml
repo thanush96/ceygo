@@ -21,6 +21,8 @@ services:
     image: postgis/postgis:15-3.3-alpine
     container_name: ceygo-db
     restart: always
+    ports:
+    - "5432:5432"
     environment:
       POSTGRES_USER: ${DB_USERNAME:-${DB_USER:-ceygo_user}}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-ceygo_pass}
@@ -29,11 +31,14 @@ services:
       - pgdata:/var/lib/postgresql/data
     networks:
       - ceygo-network
+    platform: linux/amd64
 
   redis:
     image: redis:7-alpine
     container_name: ceygo-redis
     restart: always
+    ports:
+    - "6379:6379"
     command: redis-server --save 60 1 --loglevel warning
     volumes:
       - redisdata:/data
@@ -45,8 +50,7 @@ services:
     container_name: ceygo-nginx
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
+    - "6379:6379"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - certbot-etc:/etc/letsencrypt

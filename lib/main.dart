@@ -7,6 +7,7 @@ import 'package:ceygo_app/core/router/app_router.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -15,10 +16,12 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+
     return MaterialApp.router(
       title: 'CeyGo',
       theme: AppTheme.lightTheme,
-      routerConfig: appRouter,
+      routerConfig: router,
       builder: (context, child) {
         return GradientBackground(child: child ?? const SizedBox.shrink());
       },
@@ -29,9 +32,9 @@ class MyApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
-        Locale('en'), // English
-        Locale('ta'), // Tamil
-        Locale('si'), // Sinhala
+        Locale('en'),
+        Locale('ta'),
+        Locale('si'),
       ],
       debugShowCheckedModeBanner: false,
     );

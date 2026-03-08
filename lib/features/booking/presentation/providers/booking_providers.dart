@@ -1,44 +1,62 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ceygo_app/features/booking/domain/models/booking.dart';
+import 'package:ceygo_app/features/booking/data/booking_repository.dart';
 
-// Booking History provider
-class BookingHistoryNotifier extends Notifier<List<Booking>> {
+// Async provider for fetching bookings from API
+final bookingHistoryProvider = AsyncNotifierProvider<BookingHistoryNotifier, List<Booking>>(
+  BookingHistoryNotifier.new,
+);
+
+class BookingHistoryNotifier extends AsyncNotifier<List<Booking>> {
   @override
-  List<Booking> build() {
-    return [];
+  Future<List<Booking>> build() async {
+    final repo = ref.watch(bookingRepositoryProvider);
+    return repo.getMyBookings();
   }
 
-  void addBooking(Booking booking) {
-    state = [...state, booking];
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() {
+      final repo = ref.read(bookingRepositoryProvider);
+      return repo.getMyBookings();
+    });
   }
 
-  void removeBooking(String bookingId) {
-    state = state.where((b) => b.id != bookingId).toList();
+  Future<Map<String, dynamic>> createBooking({
+    required String vehicleId,
+    required DateTime startDate,
+    required DateTime endDate,
+    required String pickupLocation,
+    required String dropoffLocation,
+    String? flightNumber,
+  }) async {
+    final repo = ref.read(bookingRepositoryProvider);
+    final result = await repo.createBooking(
+      vehicleId: vehicleId,
+      startDate: startDate,
+      endDate: endDate,
+      pickupLocation: pickupLocation,
+      dropoffLocation: dropoffLocation,
+      flightNumber: flightNumber,
+    );
+    // Refresh the list after creating
+    await refresh();
+    return result;
   }
 
-  void updateBookingStatus(String bookingId, String status) {
-    state = [
-      for (final booking in state)
-        if (booking.id == bookingId)
-          Booking(
-            id: booking.id,
-            car: booking.car,
-            startDate: booking.startDate,
-            endDate: booking.endDate,
-            pickupTime: booking.pickupTime,
-            pickupLocation: booking.pickupLocation,
-            paymentMethod: booking.paymentMethod,
-            totalPrice: booking.totalPrice,
-            bookingDate: booking.bookingDate,
-            status: status,
-          )
-        else
-          booking,
-    ];
+  Future<void> cancelBooking(String bookingId) async {
+    final repo = ref.read(bookingRepositoryProvider);
+    await repo.cancelBooking(bookingId);
+    // Update local state
+    final current = state.value ?? [];
+    state = AsyncData(
+      current.map((b) => b.id == bookingId ? b.copyWith(status: 'cancelled') : b).toList(),
+    );
   }
 }
 
-final bookingHistoryProvider =
-    NotifierProvider<BookingHistoryNotifier, List<Booking>>(
-      () => BookingHistoryNotifier(),
-    );
+// Single booking detail provider
+final bookingDetailProvider = FutureProvider.family<Booking, String>((ref, id) async {
+  final repo = ref.watch(bookingRepositoryProvider);
+  return repo.getBookingById(id);
+});

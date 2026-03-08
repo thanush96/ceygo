@@ -15,17 +15,19 @@ export class OtpService {
   }
 
   async sendOtp(phone: string, otp: string): Promise<boolean> {
-    // Notify.lk expects phone in 9477xxxxxxx format
+    // Notify.lk expects phone in 9477xxxxxxx format (no + prefix)
     const formattedPhone = phone.replace(/^0/, '94').replace(/^\+/, '');
-    
+
     const message = `Your CeyGo verification code is: ${otp}. Valid for 5 minutes.`;
 
+    // If no real API key configured, log OTP to console (dev mode)
+    if (!this.apiKey || this.apiKey === 'your_notify_api_key') {
+      console.log(`[DEV] OTP for ${formattedPhone}: ${otp}`);
+      return true;
+    }
+
     try {
-      // In development, if no API key is provided, just log it
-      if (!this.apiKey || this.apiKey === 'your_notify_api_key') {
-        console.log(`[DEV] OTP for ${formattedPhone}: ${otp}`);
-        return true;
-      }
+      console.log(`[OTP] Sending to ${formattedPhone}...`);
 
       const response = await axios.get('https://app.notify.lk/api/v1/send', {
         params: {
@@ -37,14 +39,19 @@ export class OtpService {
         },
       });
 
-      return response.data?.status === 'success';
-    } catch (error) {
-      console.error('Notify.lk API error:', error.response?.data || error.message);
-      // In dev, don't block the flow
-      if (this.configService.get('NODE_ENV') === 'development') {
+      const data = response.data;
+      console.log(`[OTP] Notify.lk response:`, JSON.stringify(data));
+
+      // Notify.lk returns { status: 'success' } or status code 200 on success
+      if (data?.status === 'success' || response.status === 200) {
         return true;
       }
-      throw new InternalServerErrorException('Failed to send OTP');
+
+      console.error(`[OTP] Unexpected response:`, data);
+      return false;
+    } catch (error) {
+      console.error('[OTP] Notify.lk API error:', error.response?.data || error.message);
+      throw new InternalServerErrorException('Failed to send OTP. Please try again.');
     }
   }
 

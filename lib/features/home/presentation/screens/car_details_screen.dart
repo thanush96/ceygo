@@ -24,7 +24,7 @@ class CarDetailsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final carsAsync = ref.watch(carListProvider);
+    final carsAsync = ref.watch(carDetailProvider(carId));
 
     return Scaffold(
       body: Container(
@@ -36,11 +36,7 @@ class CarDetailsScreen extends ConsumerWidget {
           ),
         ),
         child: carsAsync.when(
-          data: (cars) {
-            final car = cars.firstWhere(
-              (c) => c.id == carId,
-              orElse: () => cars.first,
-            );
+          data: (car) {
             return _CarDetailsContent(car: car);
           },
           loading: () => const Center(child: CircularProgressIndicator()),
@@ -126,7 +122,7 @@ class _CarImageWithSpecs extends StatelessWidget {
           Positioned(
             right: -50,
             bottom: 20,
-            child: Image.asset(
+            child: Image.network(
               car.imageUrl,
               height: 180,
               fit: BoxFit.contain,

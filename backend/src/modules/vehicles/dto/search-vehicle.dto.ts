@@ -3,6 +3,11 @@ import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SearchVehicleDto {
+  @ApiProperty({ required: false, example: 'Toyota' })
+  @IsString()
+  @IsOptional()
+  brand?: string;
+
   @ApiProperty({ required: false, example: 'Colombo' })
   @IsString()
   @IsOptional()

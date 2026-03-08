@@ -190,9 +190,9 @@ class CarCard extends StatelessWidget {
               height: 180,
               width: double.infinity,
               color: const Color.fromARGB(255, 255, 255, 255),
-              child: Image.asset(
+              child: Image.network(
                 car.imageUrl,
-                fit: BoxFit.contain,
+                fit: BoxFit.cover,
                 errorBuilder:
                     (ctx, _, __) => const Center(
                       child: Icon(
