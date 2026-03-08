@@ -4,6 +4,7 @@ import { EntityRepository, EntityManager, FilterQuery } from '@mikro-orm/postgre
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Vehicle } from './entities/vehicle.entity';
+import { VehicleBrand } from './entities/vehicle-brand.entity';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { SearchVehicleDto } from './dto/search-vehicle.dto';
@@ -14,6 +15,8 @@ export class VehiclesService {
   constructor(
     @InjectRepository(Vehicle)
     private readonly vehicleRepository: EntityRepository<Vehicle>,
+    @InjectRepository(VehicleBrand)
+    private readonly vehicleBrandRepository: EntityRepository<VehicleBrand>,
     @InjectRepository(Booking)
     private readonly bookingRepository: EntityRepository<Booking>,
     private readonly em: EntityManager,
@@ -177,16 +180,14 @@ export class VehiclesService {
     const cached = await this.cacheManager.get<{ name: string; logo: string }[]>(cacheKey);
     if (cached) return cached;
 
-    const results = await this.vehicleRepository.createQueryBuilder('v')
-      .select(['v.brand', 'v.brand_logo'])
-      .where({ deletedAt: null, status: 'available', isBlacklisted: false })
-      .groupBy(['v.brand', 'v.brand_logo'])
-      .orderBy({ 'v.brand': 'ASC' })
-      .execute('all');
+    const brandsFromDb = await this.vehicleBrandRepository.find(
+      { isActive: true },
+      { orderBy: { name: 'ASC' } },
+    );
 
-    const brands = results.map((r: any) => ({
-      name: r.brand,
-      logo: r.brand_logo || '',
+    const brands = brandsFromDb.map((brand) => ({
+      name: brand.name,
+      logo: brand.logoUrl,
     }));
 
     await this.cacheManager.set(cacheKey, brands, 3600000);

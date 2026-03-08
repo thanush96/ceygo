@@ -6,11 +6,12 @@ import { redisStore } from 'cache-manager-redis-yet';
 import { VehiclesController } from './vehicles.controller';
 import { VehiclesService } from './vehicles.service';
 import { Vehicle } from './entities/vehicle.entity';
+import { VehicleBrand } from './entities/vehicle-brand.entity';
 import { Booking } from '@modules/bookings/entities/booking.entity';
 
 @Module({
   imports: [
-    MikroOrmModule.forFeature([Vehicle, Booking]),
+    MikroOrmModule.forFeature([Vehicle, VehicleBrand, Booking]),
     CacheModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
