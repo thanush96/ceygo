@@ -42,6 +42,17 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  Future<void> refreshUser() async {
+    final user = await _repository.tryRestoreSession();
+    if (user != null) {
+      state = AuthAuthenticated(user);
+    }
+  }
+
+  void updateUser(UserModel user) {
+    state = AuthAuthenticated(user);
+  }
+
   /// Request OTP for login (existing user)
   Future<void> requestOtp(String phone) async {
     state = const AuthLoading();

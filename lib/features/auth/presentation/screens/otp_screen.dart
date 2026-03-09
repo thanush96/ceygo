@@ -106,7 +106,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
     ref.listen<AuthState>(authProvider, (prev, next) {
       if (next is AuthAuthenticated) {
-        context.go('/home');
+        context.go(next.user.role == 'owner' ? '/owner' : '/home');
       } else if (next is AuthRegistrationRequired) {
         context.go('/signup', extra: next.phone);
       } else if (next is AuthError) {

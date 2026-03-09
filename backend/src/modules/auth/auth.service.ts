@@ -95,12 +95,22 @@ export class AuthService {
 
     this.otpStore.delete(otpKey);
 
-    const existingUser = await this.em.findOne(User, {
-      $or: [{ email: registerDto.email }, { phone: registerDto.phone }, { nic: registerDto.idNumber }],
-    });
+    // Phone must be globally unique (no two accounts can share a phone)
+    const phoneExists = await this.em.findOne(User, { phone: registerDto.phone });
+    if (phoneExists) {
+      throw new BadRequestException('An account with this phone number already exists');
+    }
 
-    if (existingUser) {
-      throw new BadRequestException('User with this email, phone, or NIC already exists');
+    // Email and NIC must be unique per role (same person can register as renter + owner with different phone)
+    const role = registerDto.role || 'renter';
+    const duplicateInRole = await this.em.findOne(User, {
+      $or: [
+        { email: registerDto.email, role },
+        { nic: registerDto.idNumber, role },
+      ],
+    });
+    if (duplicateInRole) {
+      throw new BadRequestException(`You already have a ${role} account with this email or NIC`);
     }
 
     const user = this.em.create(User, {

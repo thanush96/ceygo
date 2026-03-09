@@ -194,6 +194,26 @@ export class VehiclesService {
     return brands;
   }
 
+  async getOwnerStats(ownerId: string) {
+    const vehicles = await this.vehicleRepository.find({ owner: ownerId, deletedAt: null });
+    const totalVehicles = vehicles.length;
+    const activeVehicles = vehicles.filter(v => v.status === 'available').length;
+
+    const vehicleIds = vehicles.map(v => v.id);
+    if (vehicleIds.length === 0) {
+      return { totalVehicles, activeVehicles, totalBookings: 0, pendingBookings: 0, totalEarnings: 0 };
+    }
+
+    const bookings = await this.bookingRepository.find({ vehicle: { $in: vehicleIds } });
+    const totalBookings = bookings.length;
+    const pendingBookings = bookings.filter(b => b.status === 'pending' || b.status === 'confirmed').length;
+    const totalEarnings = bookings
+      .filter(b => b.status === 'paid' || b.status === 'completed')
+      .reduce((sum, b) => sum + Number(b.totalPrice || 0), 0);
+
+    return { totalVehicles, activeVehicles, totalBookings, pendingBookings, totalEarnings };
+  }
+
   async checkAvailability(vehicleId: string, startDate: string, endDate: string): Promise<boolean> {
     const cacheKey = `avail:${vehicleId}:${startDate}:${endDate}`;
     const cached = await this.cacheManager.get<boolean>(cacheKey);

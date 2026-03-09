@@ -13,6 +13,9 @@ import 'package:ceygo_app/features/booking/presentation/screens/booking_details_
 import 'package:ceygo_app/features/booking/presentation/screens/chat_screen.dart';
 import 'package:ceygo_app/features/booking/domain/models/booking.dart';
 import 'package:ceygo_app/core/widgets/main_shell.dart';
+import 'package:ceygo_app/features/owner/presentation/screens/owner_shell.dart';
+import 'package:ceygo_app/features/owner/presentation/screens/add_vehicle_screen.dart';
+import 'package:ceygo_app/features/home/domain/models/car.dart';
 import 'package:ceygo_app/features/auth/presentation/providers/auth_provider.dart';
 import 'package:ceygo_app/features/auth/domain/models/auth_state.dart';
 
@@ -38,8 +41,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // Still loading auth state
       if (authState is AuthInitial) return null;
 
-      // If authenticated and on auth route, go to home
-      if (isAuthenticated && isAuthRoute) return '/home';
+      // If authenticated and on auth route, go to appropriate home based on role
+      if (isAuthenticated && isAuthRoute) {
+        return authState.user.role == 'owner' ? '/owner' : '/home';
+      }
 
       // If not authenticated and on protected route, go to login
       if (!isAuthenticated && !isAuthRoute) {
@@ -137,6 +142,30 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final booking = state.extra as Booking;
           return BookingDetailsScreen(booking: booking);
+        },
+      ),
+      // Owner routes
+      GoRoute(
+        path: '/owner',
+        builder: (context, state) => const OwnerShell(),
+      ),
+      GoRoute(
+        path: '/owner/vehicles',
+        builder: (context, state) => const OwnerShell(initialIndex: 1),
+      ),
+      GoRoute(
+        path: '/owner/bookings',
+        builder: (context, state) => const OwnerShell(initialIndex: 2),
+      ),
+      GoRoute(
+        path: '/owner/add-vehicle',
+        builder: (context, state) => const AddVehicleScreen(),
+      ),
+      GoRoute(
+        path: '/owner/edit-vehicle',
+        builder: (context, state) {
+          final vehicle = state.extra as Car?;
+          return AddVehicleScreen(vehicle: vehicle);
         },
       ),
       GoRoute(

@@ -89,7 +89,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
     ref.listen<AuthState>(authProvider, (prev, next) {
       if (next is AuthAuthenticated) {
-        context.go('/home');
+        context.go(next.user.role == 'owner' ? '/owner' : '/home');
       } else if (next is AuthOtpSent) {
         context.push('/otp', extra: {'phone': next.phone, 'isSignup': true});
       } else if (next is AuthError) {

@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property, OneToMany, Collection, Rel } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, OneToMany, Collection, Rel, Unique } from '@mikro-orm/core';
 import { IsEmail, IsNotEmpty, IsString, Matches, IsEnum, IsOptional, IsUrl } from 'class-validator';
 import { v4 } from 'uuid';
 import { Booking } from '@modules/bookings/entities/booking.entity';
@@ -6,6 +6,8 @@ import { Vehicle } from '@modules/vehicles/entities/vehicle.entity';
 import { ChatMessage } from '@modules/chat/entities/chat-message.entity';
 
 @Entity({ tableName: 'users' })
+@Unique({ properties: ['email', 'role'] })
+@Unique({ properties: ['nic', 'role'] })
 export class User {
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
@@ -15,7 +17,7 @@ export class User {
   @IsNotEmpty()
   name: string;
 
-  @Property({ unique: true })
+  @Property()
   @IsEmail()
   email: string;
 
@@ -36,7 +38,7 @@ export class User {
   @IsEnum(['NIC', 'Passport'])
   idType: string;
 
-  @Property({ unique: true })
+  @Property()
   @IsString()
   @IsNotEmpty()
   @Matches(/^(?:[0-9]{9}[xXvV]|[0-9]{12})$/, {

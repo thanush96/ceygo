@@ -181,7 +181,7 @@ class ProfileContent extends ConsumerWidget {
                         ),
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 16),
 
                       // Logout Button
                       SizedBox(

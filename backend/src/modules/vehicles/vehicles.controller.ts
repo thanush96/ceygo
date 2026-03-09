@@ -61,6 +61,14 @@ export class VehiclesController {
     return this.vehiclesService.getOwnerVehicles(req.user.id);
   }
 
+  @Get('owner/stats')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get owner dashboard stats' })
+  getOwnerStats(@Request() req) {
+    return this.vehiclesService.getOwnerStats(req.user.id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get vehicle details' })
   @ApiResponse({ status: 200, description: 'Vehicle details' })
