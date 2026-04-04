@@ -25,10 +25,10 @@ class ConversationsNotifier extends AsyncNotifier<List<ChatConversation>> {
 
 // Messages for a specific conversation (initial load)
 final chatMessagesProvider = FutureProvider.family<List<ChatMessage>, String>((ref, userId) async {
-  final repo = ref.watch(chatRepositoryProvider);
-  // Mark as read
-  repo.markAsRead(userId);
+  final repo = ref.read(chatRepositoryProvider);
   final result = await repo.getMessages(userId);
+  // Mark as read after fetching (fire-and-forget, don't block)
+  repo.markAsRead(userId);
   return result['items'] as List<ChatMessage>;
 });
 

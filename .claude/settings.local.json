@@ -31,7 +31,12 @@
       "Bash(grep:*)",
       "Bash(npx ts-node:*)",
       "Bash(docker ps:*)",
-      "Bash(docker exec:*)"
+      "Bash(docker exec:*)",
+      "Bash(docker:*)",
+      "Bash(ls:*)",
+      "Bash(/Users/thanush/Documents/fvm/default/bin/flutter pub:*)",
+      "Bash(npx:*)",
+      "Bash(./node_modules/.bin/mikro-orm schema:update:*)"
     ]
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ceygo_app/features/home/presentation/providers/home_providers.dart';
 import 'package:ceygo_app/features/home/presentation/widgets/car_card.dart';
+import 'package:ceygo_app/features/home/domain/models/car.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:ceygo_app/core/widgets/bottom_nav_bar.dart';
 import 'package:ceygo_app/features/home/presentation/widgets/filter_bottom_sheet.dart';
@@ -66,6 +67,7 @@ class HomeContent extends ConsumerStatefulWidget {
 class _HomeContentState extends ConsumerState<HomeContent> {
   String _selectedLocation = 'Colombo, Sri Lanka';
   late TextEditingController _searchController;
+  Map<String, dynamic> _activeFilters = const {};
 
   @override
   void initState() {
@@ -286,7 +288,21 @@ class _HomeContentState extends ConsumerState<HomeContent> {
 
                         GestureDetector(
                           onTap: () {
-                            showFilterBottomSheet(context);
+                            showFilterBottomSheet(context).then((filters) {
+                              if (filters == null) return;
+
+                              setState(() {
+                                _activeFilters = filters;
+                              });
+
+                              final nextBrand = filters['brand'] as String?;
+                              final brandController = ref.read(
+                                selectedBrandProvider.notifier,
+                              );
+                              if (brandController.state != nextBrand) {
+                                brandController.state = nextBrand;
+                              }
+                            });
                           },
                           child: Container(
                             padding: const EdgeInsets.all(16),
@@ -310,7 +326,12 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                     _BrandChips(
                       selectedBrand: ref.watch(selectedBrandProvider),
                       onBrandSelected: (brand) {
-                        ref.read(selectedBrandProvider.notifier).state = brand;
+                        final brandController = ref.read(
+                          selectedBrandProvider.notifier,
+                        );
+                        if (brandController.state != brand) {
+                          brandController.state = brand;
+                        }
                       },
                     ),
                     // const SizedBox(height: 32),
@@ -342,25 +363,39 @@ class _HomeContentState extends ConsumerState<HomeContent> {
             carsAsyncValue.when(
               data: (cars) {
                 final favoriteIds = ref.watch(favoriteIdsProvider);
+                final filteredCars = _applyLocalFilters(cars);
 
                 return SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final car = cars[index];
-                      final isFav = favoriteIds.contains(car.id);
-                      return CarCard(
-                        car: car,
-                        isFavorite: isFav,
-                        onFavoriteToggle: () {
-                          ref.read(favoritesProvider.notifier).toggleFavorite(car);
-                        },
-                        onTap: () {
-                          context.push('/car-details/${car.id}');
-                        },
-                      );
-                    }, childCount: cars.length),
-                  ),
+                  sliver:
+                      filteredCars.isEmpty
+                          ? SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 24),
+                              child: Center(
+                                child: Text(
+                                  'No vehicles match your filters.',
+                                  style: TextStyle(color: Colors.grey[600]),
+                                ),
+                              ),
+                            ),
+                          )
+                          : SliverList(
+                            delegate: SliverChildBuilderDelegate((context, index) {
+                              final car = filteredCars[index];
+                              final isFav = favoriteIds.contains(car.id);
+                              return CarCard(
+                                car: car,
+                                isFavorite: isFav,
+                                onFavoriteToggle: () {
+                                  ref.read(favoritesProvider.notifier).toggleFavorite(car);
+                                },
+                                onTap: () {
+                                  context.push('/car-details/${car.id}');
+                                },
+                              );
+                            }, childCount: filteredCars.length),
+                          ),
                 );
               },
               error:
@@ -378,6 +413,40 @@ class _HomeContentState extends ConsumerState<HomeContent> {
         ),
       ),
     );
+  }
+
+  List<Car> _applyLocalFilters(List<Car> cars) {
+    final searchQuery = _searchController.text.trim().toLowerCase();
+    final minPrice =
+        (_activeFilters['priceRange'] as RangeValues?)?.start ?? 0;
+    final maxPrice =
+        (_activeFilters['priceRange'] as RangeValues?)?.end ?? double.infinity;
+    final selectedTransmission =
+        (_activeFilters['transmission'] as String?) ?? 'All';
+    final selectedSeats = (_activeFilters['seats'] as String?) ?? 'All';
+
+    return cars.where((car) {
+      final matchesSearch =
+          searchQuery.isEmpty ||
+          car.name.toLowerCase().contains(searchQuery) ||
+          car.brand.toLowerCase().contains(searchQuery);
+
+      final matchesPrice =
+          car.pricePerDay >= minPrice && car.pricePerDay <= maxPrice;
+
+      final matchesTransmission =
+          selectedTransmission == 'All' ||
+          car.transmission.toLowerCase() == selectedTransmission.toLowerCase();
+
+      final matchesSeats =
+          selectedSeats == 'All'
+              ? true
+              : selectedSeats == '15+'
+              ? car.seats >= 15
+              : car.seats == int.tryParse(selectedSeats);
+
+      return matchesSearch && matchesPrice && matchesTransmission && matchesSeats;
+    }).toList();
   }
 }
 

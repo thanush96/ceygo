@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "@mikro-orm/cli": "^6.6.9"
+  }
+}

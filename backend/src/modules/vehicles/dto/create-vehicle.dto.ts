@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, IsNotEmpty, IsEnum, IsUrl, IsBoolean, Matches, Min, Max } from 'class-validator';
+import { IsString, IsNumber, IsOptional, IsNotEmpty, IsEnum, IsUrl, IsBoolean, IsArray, Matches, Min, Max } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateVehicleDto {
@@ -22,6 +22,11 @@ export class CreateVehicleDto {
   @IsOptional()
   @Matches(/\.(jpg|jpeg|png|webp)$/i, { message: 'Image must be a valid JPG, PNG or WEBP file' })
   imageUrl?: string;
+
+  @ApiProperty({ required: false, example: ['https://example.com/img1.webp'] })
+  @IsArray()
+  @IsOptional()
+  images?: string[];
 
   @ApiProperty({ example: 5000, description: 'Price per day in LKR' })
   @IsNumber()

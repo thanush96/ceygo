@@ -30,6 +30,7 @@ dependencies:
   url_launcher: ^6.2.5
   connectivity_plus: ^6.1.4
   shared_preferences: ^2.5.4
+  flutter_image_compress: ^2.4.0
 
 dev_dependencies:
   flutter_test:

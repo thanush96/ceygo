@@ -1,6 +1,10 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:ceygo_app/core/widgets/gradient_background.dart';
 import 'package:ceygo_app/features/owner/data/owner_repository.dart';
 import 'package:ceygo_app/features/owner/presentation/providers/owner_providers.dart';
@@ -8,7 +12,7 @@ import 'package:ceygo_app/features/home/presentation/providers/home_providers.da
 import 'package:ceygo_app/features/home/domain/models/car.dart';
 
 class AddVehicleScreen extends ConsumerStatefulWidget {
-  final Car? vehicle; // null for add, non-null for edit
+  final Car? vehicle;
 
   const AddVehicleScreen({super.key, this.vehicle});
 
@@ -23,7 +27,6 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
   late TextEditingController _seatsCtrl;
   late TextEditingController _plateCtrl;
   late TextEditingController _locationCtrl;
-  late TextEditingController _imageUrlCtrl;
 
   String _brand = '';
   String _brandLogo = '';
@@ -31,6 +34,12 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
   String _fuelType = 'Petrol';
   bool _airportPickup = false;
   bool _isLoading = false;
+  String _loadingStatus = '';
+
+  // Image handling
+  final List<_SelectedImage> _selectedImages = [];
+  final List<String> _existingImageUrls = [];
+  final ImagePicker _picker = ImagePicker();
 
   bool get _isEditing => widget.vehicle != null;
 
@@ -43,12 +52,16 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
     _seatsCtrl = TextEditingController(text: v?.seats.toString() ?? '4');
     _plateCtrl = TextEditingController(text: '');
     _locationCtrl = TextEditingController(text: v?.location ?? '');
-    _imageUrlCtrl = TextEditingController(text: v?.imageUrl ?? '');
     if (v != null) {
       _brand = v.brand;
       _brandLogo = v.brandLogo;
       _transmission = v.transmission;
       _fuelType = v.fuelType;
+      // Load existing images
+      _existingImageUrls.addAll(v.images);
+      if (v.imageUrl.isNotEmpty && !_existingImageUrls.contains(v.imageUrl)) {
+        _existingImageUrls.insert(0, v.imageUrl);
+      }
     }
   }
 
@@ -59,21 +72,94 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
     _seatsCtrl.dispose();
     _plateCtrl.dispose();
     _locationCtrl.dispose();
-    _imageUrlCtrl.dispose();
     super.dispose();
+  }
+
+  int get _totalImageCount => _existingImageUrls.length + _selectedImages.length;
+
+  Future<void> _pickImages() async {
+    final remaining = 5 - _totalImageCount;
+    if (remaining <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Maximum 5 images allowed')),
+      );
+      return;
+    }
+
+    try {
+      final List<XFile> picked = await _picker.pickMultiImage(
+        imageQuality: 90,
+        maxWidth: 1920,
+        maxHeight: 1080,
+      );
+      if (picked.isEmpty) return;
+
+      final toAdd = picked.take(remaining);
+      for (final xfile in toAdd) {
+        final bytes = await xfile.readAsBytes();
+        // Compress using flutter_image_compress
+        final compressed = await FlutterImageCompress.compressWithList(
+          bytes,
+          minWidth: 1200,
+          minHeight: 800,
+          quality: 75,
+          format: CompressFormat.jpeg,
+        );
+        setState(() {
+          _selectedImages.add(_SelectedImage(
+            bytes: compressed,
+            file: File(xfile.path),
+          ));
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to pick images: $e')),
+        );
+      }
+    }
+  }
+
+  void _removeNewImage(int index) {
+    setState(() => _selectedImages.removeAt(index));
+  }
+
+  void _removeExistingImage(int index) {
+    setState(() => _existingImageUrls.removeAt(index));
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_brand.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a brand')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a brand')),
+      );
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _loadingStatus = 'Preparing...';
+    });
 
     try {
       final repo = ref.read(ownerRepositoryProvider);
+      List<String> uploadedUrls = [];
+
+      // Upload new images if any
+      if (_selectedImages.isNotEmpty) {
+        setState(() => _loadingStatus = 'Uploading images...');
+        final imageBytes = _selectedImages.map((img) => img.bytes).toList();
+        uploadedUrls = await repo.uploadVehicleImages(imageBytes);
+      }
+
+      // Combine existing + newly uploaded
+      final allImages = [..._existingImageUrls, ...uploadedUrls];
+      final primaryImage = allImages.isNotEmpty ? allImages.first : null;
+
+      setState(() => _loadingStatus = _isEditing ? 'Updating vehicle...' : 'Adding vehicle...');
+
       if (_isEditing) {
         await repo.updateVehicle(widget.vehicle!.id, {
           'name': _nameCtrl.text.trim(),
@@ -85,14 +171,15 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
           'fuelType': _fuelType,
           'airportPickupAvailable': _airportPickup,
           if (_locationCtrl.text.isNotEmpty) 'location': _locationCtrl.text.trim(),
-          if (_imageUrlCtrl.text.isNotEmpty) 'imageUrl': _imageUrlCtrl.text.trim(),
+          if (primaryImage != null) 'imageUrl': primaryImage,
+          'images': allImages,
         });
       } else {
         await repo.addVehicle(
           name: _nameCtrl.text.trim(),
           brand: _brand,
           brandLogo: _brandLogo.isNotEmpty ? _brandLogo : null,
-          imageUrl: _imageUrlCtrl.text.isNotEmpty ? _imageUrlCtrl.text.trim() : null,
+          imageUrl: primaryImage,
           pricePerDay: double.parse(_priceCtrl.text.trim()),
           seats: int.parse(_seatsCtrl.text.trim()),
           transmission: _transmission,
@@ -100,6 +187,7 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
           plateNo: _plateCtrl.text.trim(),
           airportPickupAvailable: _airportPickup,
           location: _locationCtrl.text.isNotEmpty ? _locationCtrl.text.trim() : null,
+          images: allImages,
         );
       }
 
@@ -117,7 +205,10 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) setState(() {
+        _isLoading = false;
+        _loadingStatus = '';
+      });
     }
   }
 
@@ -149,27 +240,9 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Image Preview
-                if (_imageUrlCtrl.text.isNotEmpty)
-                  Container(
-                    height: 180,
-                    width: double.infinity,
-                    margin: const EdgeInsets.only(bottom: 20),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: Colors.grey.shade200,
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Image.network(
-                        _imageUrlCtrl.text,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Center(
-                          child: Icon(Icons.broken_image, size: 48, color: Colors.grey),
-                        ),
-                      ),
-                    ),
-                  ),
+                // Image Picker Section
+                _buildLabel('Vehicle Photos (up to 5)'),
+                _buildImagePicker(),
 
                 _buildLabel('Vehicle Name'),
                 _buildTextField(_nameCtrl, 'e.g. Corolla', validator: (v) => v!.isEmpty ? 'Required' : null),
@@ -275,9 +348,6 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
                 _buildLabel('Location'),
                 _buildTextField(_locationCtrl, 'e.g. Colombo'),
 
-                _buildLabel('Image URL'),
-                _buildTextField(_imageUrlCtrl, 'https://...', onChanged: (_) => setState(() {})),
-
                 const SizedBox(height: 8),
                 SwitchListTile(
                   title: const Text('Airport Pickup Available'),
@@ -298,7 +368,17 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
                     child: _isLoading
-                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
+                              if (_loadingStatus.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Text(_loadingStatus, style: const TextStyle(fontSize: 10, color: Colors.white70)),
+                                ),
+                            ],
+                          )
                         : Text(
                             _isEditing ? 'Update Vehicle' : 'Add Vehicle',
                             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -312,6 +392,109 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildImagePicker() {
+    return SizedBox(
+      height: 130,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          // Existing images (from server)
+          ..._existingImageUrls.asMap().entries.map((entry) => _buildImageTile(
+            child: Image.network(entry.value, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.broken_image)),
+            onRemove: () => _removeExistingImage(entry.key),
+          )),
+          // Newly picked images
+          ..._selectedImages.asMap().entries.map((entry) => _buildImageTile(
+            child: Image.file(entry.value.file, fit: BoxFit.cover),
+            onRemove: () => _removeNewImage(entry.key),
+            sizeLabel: _formatBytes(entry.value.bytes.length),
+          )),
+          // Add button
+          if (_totalImageCount < 5)
+            GestureDetector(
+              onTap: _pickImages,
+              child: Container(
+                width: 110,
+                height: 120,
+                margin: const EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add_photo_alternate_outlined, size: 36, color: Colors.grey.shade400),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Add Photo',
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
+                    ),
+                    Text(
+                      '${_totalImageCount}/5',
+                      style: TextStyle(fontSize: 10, color: Colors.grey.shade400),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImageTile({required Widget child, required VoidCallback onRemove, String? sizeLabel}) {
+    return Container(
+      width: 110,
+      height: 120,
+      margin: const EdgeInsets.only(right: 10),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: SizedBox(width: 110, height: 120, child: child),
+          ),
+          Positioned(
+            top: 4,
+            right: 4,
+            child: GestureDetector(
+              onTap: onRemove,
+              child: Container(
+                width: 24,
+                height: 24,
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close, size: 14, color: Colors.white),
+              ),
+            ),
+          ),
+          if (sizeLabel != null)
+            Positioned(
+              bottom: 4,
+              left: 4,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(sizeLabel, style: const TextStyle(color: Colors.white, fontSize: 9)),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _formatBytes(int bytes) {
+    if (bytes < 1024) return '${bytes}B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(0)}KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)}MB';
   }
 
   Widget _buildLabel(String text) {
@@ -345,6 +528,12 @@ class _AddVehicleScreenState extends ConsumerState<AddVehicleScreen> {
       ),
     );
   }
+}
+
+class _SelectedImage {
+  final Uint8List bytes;
+  final File file;
+  _SelectedImage({required this.bytes, required this.file});
 }
 
 class _ToggleChip extends StatelessWidget {

@@ -8,6 +8,7 @@ import {
   Request,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { FavoritesService } from './favorites.service';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 
@@ -15,6 +16,7 @@ import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 @Controller('favorites')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
+@SkipThrottle()
 export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}
 

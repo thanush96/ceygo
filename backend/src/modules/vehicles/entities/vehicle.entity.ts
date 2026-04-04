@@ -32,6 +32,9 @@ export class Vehicle {
   @IsUrl()
   imageUrl: string;
 
+  @Property({ type: 'json', nullable: true })
+  images: string[] = [];
+
   @Index()
   @Property({ type: 'decimal', precision: 10, scale: 2 })
   @IsNumber()

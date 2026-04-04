@@ -11,6 +11,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { FavoritesModule } from './modules/favorites/favorites.module';
+import { UploadModule } from './modules/upload/upload.module';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { SmartCacheInterceptor } from './common/interceptors/smart-cache.interceptor';
@@ -56,23 +57,27 @@ import { CommonModule } from './common/common.module';
       }),
     }),
 
-    ThrottlerModule.forRoot([{
-      name: 'default',
-      ttl: 60000,
-      limit: 100,
-    }, {
-      name: 'auth',
-      ttl: 60000,
-      limit: 5,
-    }, {
-      name: 'search',
-      ttl: 60000,
-      limit: 60,
-    }, {
-      name: 'booking',
-      ttl: 60000,
-      limit: 10,
-    }]),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => [{
+        name: 'default',
+        ttl: 60000,
+        limit: parseInt(configService.get<string>('THROTTLE_DEFAULT_LIMIT', '100'), 10),
+      }, {
+        name: 'auth',
+        ttl: 60000,
+        limit: parseInt(configService.get<string>('THROTTLE_AUTH_LIMIT', '5'), 10),
+      }, {
+        name: 'search',
+        ttl: 60000,
+        limit: parseInt(configService.get<string>('THROTTLE_SEARCH_LIMIT', '60'), 10),
+      }, {
+        name: 'booking',
+        ttl: 60000,
+        limit: parseInt(configService.get<string>('THROTTLE_BOOKING_LIMIT', '10'), 10),
+      }],
+    }),
 
     // Feature Modules
     AuthModule,
@@ -83,6 +88,7 @@ import { CommonModule } from './common/common.module';
     ChatModule,
     AdminModule,
     FavoritesModule,
+    UploadModule,
     QueuesModule,
     CommonModule,
   ],

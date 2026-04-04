@@ -52,12 +52,17 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
   void _updatePriceRange() {
     final minPrice = double.tryParse(_minPriceController.text) ?? 1000;
     final maxPrice = double.tryParse(_maxPriceController.text) ?? 50000;
+    final normalizedMin = minPrice.clamp(1000, 50000).toDouble();
+    final normalizedMax = maxPrice.clamp(1000, 50000).toDouble();
+    final safeStart = normalizedMin <= normalizedMax ? normalizedMin : normalizedMax;
+    final safeEnd = normalizedMin <= normalizedMax ? normalizedMax : normalizedMin;
+
     setState(() {
-      _priceRange = RangeValues(
-        minPrice.clamp(1000, 50000),
-        maxPrice.clamp(1000, 50000),
-      );
+      _priceRange = RangeValues(safeStart, safeEnd);
     });
+
+    _minPriceController.text = safeStart.toInt().toString();
+    _maxPriceController.text = safeEnd.toInt().toString();
   }
 
   @override
@@ -679,6 +684,8 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
 
 /// Show the filter bottom sheet
 Future<Map<String, dynamic>?> showFilterBottomSheet(BuildContext context) {
+  final mediaQuery = MediaQuery.of(context);
+
   return showModalBottomSheet<Map<String, dynamic>>(
     context: context,
     isScrollControlled: true,
@@ -686,12 +693,18 @@ Future<Map<String, dynamic>?> showFilterBottomSheet(BuildContext context) {
     builder:
         (context) => Container(
           margin: const EdgeInsets.all(10),
-          height: MediaQuery.of(context).size.height * 0.75,
+          height: mediaQuery.size.height * 0.8,
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.all(Radius.circular(24)),
           ),
-          child: const FilterBottomSheet(),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.only(bottom: mediaQuery.padding.bottom),
+              child: const FilterBottomSheet(),
+            ),
+          ),
         ),
   );
 }

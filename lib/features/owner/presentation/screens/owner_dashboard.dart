@@ -45,14 +45,18 @@ class OwnerDashboard extends ConsumerWidget {
               const SizedBox(height: 24),
               statsAsync.when(
                 data: (stats) => _StatsGrid(stats: stats),
-                loading: () => const SizedBox(
-                  height: 200,
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                error: (err, _) => Center(
-                  child: Text('Failed to load stats',
-                      style: TextStyle(color: Colors.grey.shade600)),
-                ),
+                loading:
+                    () => const SizedBox(
+                      height: 200,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                error:
+                    (err, _) => Center(
+                      child: Text(
+                        'Failed to load stats',
+                        style: TextStyle(color: Colors.grey.shade600),
+                      ),
+                    ),
               ),
               const SizedBox(height: 28),
               Row(
@@ -63,8 +67,9 @@ class OwnerDashboard extends ConsumerWidget {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   GestureDetector(
-                    onTap: () =>
-                        ref.read(ownerTabIndexProvider.notifier).state = 2,
+                    onTap:
+                        () =>
+                            ref.read(ownerTabIndexProvider.notifier).state = 2,
                     child: Text(
                       'See All',
                       style: TextStyle(
@@ -94,13 +99,16 @@ class _StatsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final cardAspectRatio = screenWidth < 420 ? 1.2 : 1.35;
+
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 1.5,
+      childAspectRatio: cardAspectRatio,
       children: [
         _StatCard(
           icon: Icons.directions_car,
@@ -154,7 +162,7 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -171,20 +179,32 @@ class _StatCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
               color: iconColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: iconColor, size: 20),
+            child: Icon(icon, color: iconColor, size: 18),
           ),
-          const SizedBox(height: 10),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          const SizedBox(height: 8),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 1,
+              ),
+            ),
           ),
           Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
           ),
         ],
@@ -209,11 +229,16 @@ class _RecentBookings extends ConsumerWidget {
             child: Center(
               child: Column(
                 children: [
-                  Icon(Icons.calendar_today_outlined,
-                      size: 48, color: Colors.grey.shade300),
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 48,
+                    color: Colors.grey.shade300,
+                  ),
                   const SizedBox(height: 12),
-                  Text('No bookings yet',
-                      style: TextStyle(color: Colors.grey.shade600)),
+                  Text(
+                    'No bookings yet',
+                    style: TextStyle(color: Colors.grey.shade600),
+                  ),
                 ],
               ),
             ),
@@ -221,14 +246,18 @@ class _RecentBookings extends ConsumerWidget {
         }
         final recent = bookings.take(3).toList();
         return Column(
-          children: recent
-              .map((booking) => _RecentBookingTile(booking: booking))
-              .toList(),
+          children:
+              recent
+                  .map((booking) => _RecentBookingTile(booking: booking))
+                  .toList(),
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => Text('Failed to load',
-          style: TextStyle(color: Colors.grey.shade600)),
+      error:
+          (_, __) => Text(
+            'Failed to load',
+            style: TextStyle(color: Colors.grey.shade600),
+          ),
     );
   }
 }
@@ -266,16 +295,19 @@ class _RecentBookingTile extends StatelessWidget {
                 width: 60,
                 height: 60,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child:
-                      const Icon(Icons.directions_car, color: Colors.grey),
-                ),
+                errorBuilder:
+                    (_, __, ___) => Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.directions_car,
+                        color: Colors.grey,
+                      ),
+                    ),
               ),
             ),
           const SizedBox(width: 12),
@@ -286,15 +318,16 @@ class _RecentBookingTile extends StatelessWidget {
                 Text(
                   car != null ? '${car.brand} ${car.name}' : 'Vehicle',
                   style: const TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 15),
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Rs ${booking.totalPrice.toStringAsFixed(0)}',
-                  style:
-                      TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                  style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                 ),
               ],
             ),

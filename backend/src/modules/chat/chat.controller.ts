@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { ChatService } from './chat.service';
 import { ChatGateway } from './chat.gateway';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
@@ -8,6 +9,7 @@ import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 @Controller('chat')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
+@SkipThrottle()
 export class ChatController {
   constructor(
     private readonly chatService: ChatService,

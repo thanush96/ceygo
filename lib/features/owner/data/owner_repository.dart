@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ceygo_app/core/services/api_service.dart';
@@ -11,6 +12,24 @@ final ownerRepositoryProvider = Provider<OwnerRepository>((ref) {
 class OwnerRepository {
   final Dio _dio;
   OwnerRepository(this._dio);
+
+  /// Upload vehicle images (compressed bytes) and return S3 URLs
+  Future<List<String>> uploadVehicleImages(List<Uint8List> imageBytes) async {
+    try {
+      final formData = FormData();
+      for (int i = 0; i < imageBytes.length; i++) {
+        formData.files.add(MapEntry(
+          'images',
+          MultipartFile.fromBytes(imageBytes[i], filename: 'vehicle_$i.jpg'),
+        ));
+      }
+      final response = await _dio.post('/upload/vehicle-images', data: formData);
+      final urls = (response.data['urls'] as List).cast<String>();
+      return urls;
+    } on DioException catch (e) {
+      throw ApiException.fromDioError(e);
+    }
+  }
 
   Future<Map<String, dynamic>> switchRole(String role) async {
     try {
@@ -54,6 +73,7 @@ class OwnerRepository {
     String? location,
     double? lat,
     double? lng,
+    List<String>? images,
   }) async {
     try {
       final response = await _dio.post('/vehicles', data: {
@@ -70,6 +90,7 @@ class OwnerRepository {
         if (location != null) 'location': location,
         if (lat != null) 'lat': lat,
         if (lng != null) 'lng': lng,
+        if (images != null) 'images': images,
       });
       return Car.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
